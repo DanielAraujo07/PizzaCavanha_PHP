@@ -1,0 +1,405 @@
+        /* Estilos Globais - Dark Mode com Cores Quentes */
+        :root {
+            --primary-color: #FFA500;
+            --secondary-color: #FFD700;
+            --dark-color: #242424;
+            --light-color: #1E1E1E;
+            --text-color: #E0E0E0;
+            --text-dark: #333;
+            --success-color: #4CAF50;
+            --border-color: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #261a6c, #ad4727, #fd9c2d);
+            background-size: 100vw 100vh;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            height: 81px;
+            background-color: var(--light-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--primary-color);
+        }
+
+        .header-container {
+            display: flex;
+            width: 100%;
+            height: 81px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        header a {
+            text-decoration: none;
+        }
+
+        .nav-link .logo{
+            height: 50px;
+            align-items: start;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo img {
+            height: 50px;
+        }
+
+        .logo h1 {
+            font-family: Jaro;
+            font-weight: 400;
+            color: var(--primary-color);
+            font-size: 1.9rem;
+            text-shadow: 0 0 5px rgba(255, 165, 0, 0.5);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 680px;
+            gap: 60px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        nav ul a:hover {
+            color: var(--primary-color);
+            background-color: rgba(255, 165, 0, 0.1);
+        }
+
+        .container-usuario {
+            display: flex;
+            flex-direction: column;
+            align-items: end;
+            position: relative;
+        }
+
+        #button-user {
+            display: none;
+        }
+
+        .btn-usuario label {
+            display: flex;
+            height: 45px;
+            width: 45px;
+            border: #929292 2px solid;
+            border-radius: 50%;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-usuario label img {
+            height: 35px;
+            width: 35px;
+            border-radius: 50%;
+        }
+
+        .btn-usuario label:hover {
+            border: var(--primary-color) solid 2px;
+            background-color: rgba(255, 165, 0, 0.1);
+            box-shadow: #ffa6008e 0 0 12px -1px;
+        }
+
+        .opt-usuario {
+            display: none;
+            position: absolute;
+            width: 220px;
+            margin-top: 55px;
+            padding: 15px;
+            background-color: #242424;
+            box-shadow: #1E1E1E 0px 3px 10px;
+            border-radius: 4px;
+        }
+
+        .nome-usuario p {
+            margin-left: 10px;
+            font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-size: 18px;
+        }
+
+        .opt-usuario hr {
+            margin-top: 3px;
+            margin-bottom: 10px;
+        }
+
+        .sair-usuario {
+            font-size: 16px;
+        }
+        
+        .sair-usuario a{
+            padding: 5px;
+        }
+        .sair-usuario a:hover {
+            color: #FFA500;
+            background-color: #ffa5001a;
+        }
+
+        #button-user:checked ~ .opt-usuario {
+            display: block;
+        }
+
+        /* Botões */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--text-dark);
+        }
+
+        .btn-primary:hover {
+            background-color: #e69500;
+            transform: translateY(-2px);
+            box-shadow: 0 0px 8px 4px rgba(255, 165, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e6c700;
+            transform: translateY(-2px);
+            box-shadow: 0 0px 8px 4px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Páginas */
+        .page {
+            display: none;
+            padding: 40px 0;
+        }
+
+        .page.active {
+            display: block;
+        }
+        .cntr-gamecontainer {
+            display: flex;
+            justify-content: center;
+        }
+
+        #game-container {
+            margin-top: 15vh;
+            position: relative;
+            width: 800px;
+            height: 500px;
+            background-color: #000;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        #game-canvas {
+            background-color: #111;
+            display: block;
+        }
+
+        #score {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            z-index: 2;
+        }
+
+        .player1 {
+            color: #4fc3f7;
+        }
+
+        .player2 {
+            color: #ff5252;
+        }
+
+        #middle-line {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 2px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            z-index: 1;
+        }
+
+        #start-screen,
+        #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 58px;
+            font-family: Rajdhani;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .start-button {
+            padding: 15px 30px;
+            font-size: 20px;
+            background: linear-gradient(45deg, #4fc3f7, #2196f3);
+            color: white;
+            border: none;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 11;
+        }
+
+        .start-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .controls {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .controls p {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        .controles-container {
+            display: flex;
+            margin-top: 15vh;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+            height: 500px;
+            width: 56px;
+        }
+        
+        .control-keys {
+            height: 50%;
+            width: 55px;
+            border-radius: 10px;
+            border: none;
+            margin-top: 2px;
+            margin-bottom: 2px;
+            z-index: 12;
+            transition: all 0.3s;
+        }
+
+        .control-keys.w-s {
+            background-color: #4fc3f7;
+            font-size: 36px;
+            font-family: Jaro;
+            font-weight: 500;
+        }
+        
+        .control-keys.w-s:hover {
+            background-color: #34a6db;
+            box-shadow: 0 0px 10px #0000004d;
+            color: #FFF;
+        }
+
+        .control-keys.up-down {
+            background-color: #ff5252;
+            font-size: 32px;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-weight: 600;
+        }
+
+        .control-keys.up-down:hover {
+            background-color: #f54242;
+            box-shadow: 0 0px 10px #0000004d;
+            color: #FFF;
+        }
+
+        .player1-key {
+            color: #4fc3f7;
+            font-weight: bold;
+        }
+
+        .player2-key {
+            color: #ff5252;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #winner-message {
+            font-size: 36px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .winner-player1 {
+            color: #4fc3f7;
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.7);
+        }
+
+        .winner-player2 {
+            color: #ff5252;
+            text-shadow: 0 0 10px rgba(255, 82, 82, 0.7);
+        }
