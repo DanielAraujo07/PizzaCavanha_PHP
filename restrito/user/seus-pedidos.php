@@ -1,39 +1,38 @@
-<?php
+<?php 
 include "../verifica_login.php";
 include "../conexao.php";
 
 // Buscar pedidos do usuário
 $id_usuario = $_SESSION['id'];
 
-// Query para buscar pedidos com todas as informações
-$sql = "
+// Query SIMPLES e DIRETA para buscar pedidos
+$sql_pedidos = "
     SELECT 
         p.id as pedido_id,
         p.valor as total,
         p.horario,
-        e.id as entrega_id,
         e.endereco,
         et.tipo as tipo_entrega,
         fp.nome as forma_pagamento,
         es.nome as estado,
         es.id as estado_id
     FROM pedido p
-    LEFT JOIN entrega e ON p.id_entrega = e.id
-    LEFT JOIN tipo_entrega et ON e.id_tipo = et.id
-    LEFT JOIN formapag fp ON p.id_formapag = fp.id
-    LEFT JOIN estados es ON p.id_estado = es.id
+    JOIN entrega e ON p.id_entrega = e.id
+    JOIN tipo_entrega et ON e.id_tipo = et.id
+    JOIN formapag fp ON p.id_formapag = fp.id
+    JOIN estados es ON p.id_estado = es.id
     WHERE p.id_cliente = ?
     ORDER BY p.horario DESC
 ";
 
-$stmt = mysqli_prepare($conn, $sql);
-mysqli_stmt_bind_param($stmt, "i", $id_usuario);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$pedidos = mysqli_fetch_all($result, MYSQLI_ASSOC);
+$stmt_pedidos = mysqli_prepare($conn, $sql_pedidos);
+mysqli_stmt_bind_param($stmt_pedidos, "i", $id_usuario);
+mysqli_stmt_execute($stmt_pedidos);
+$result_pedidos = mysqli_stmt_get_result($stmt_pedidos);
+$pedidos = [];
 
-// Para cada pedido, buscar os itens
-foreach ($pedidos as &$pedido) {
+while ($pedido = mysqli_fetch_assoc($result_pedidos)) {
+    // Buscar itens para ESTE pedido específico
     $sql_itens = "
         SELECT 
             i.id as item_id,
@@ -41,38 +40,52 @@ foreach ($pedidos as &$pedido) {
             i.quantidade,
             i.valor as preco_unitario,
             i.descricao,
-            i.observacao,
-            (i.quantidade * i.valor) as subtotal
+            i.observacao
         FROM pedido_itens pi
-        LEFT JOIN itens i ON pi.id_item = i.id
+        JOIN itens i ON pi.id_item = i.id
         WHERE pi.id_pedido = ?
+        ORDER BY i.id ASC
     ";
-
+    
     $stmt_itens = mysqli_prepare($conn, $sql_itens);
     mysqli_stmt_bind_param($stmt_itens, "i", $pedido['pedido_id']);
     mysqli_stmt_execute($stmt_itens);
     $result_itens = mysqli_stmt_get_result($stmt_itens);
-    $pedido['itens'] = mysqli_fetch_all($result_itens, MYSQLI_ASSOC);
-
-    // Para cada item, buscar ingredientes/adicionais
-    foreach ($pedido['itens'] as &$item) {
+    $itens = [];
+    
+    while ($item = mysqli_fetch_assoc($result_itens)) {
+        // Buscar ingredientes para ESTE item específico
         $sql_ingredientes = "
             SELECT ing.nome
             FROM ingredientes_itens ii
-            LEFT JOIN ingredientes ing ON ii.id_ingrediente = ing.id
+            JOIN ingredientes ing ON ii.id_ingrediente = ing.id
             WHERE ii.id_item = ?
+            ORDER BY ing.nome ASC
         ";
-
+        
         $stmt_ing = mysqli_prepare($conn, $sql_ingredientes);
         mysqli_stmt_bind_param($stmt_ing, "i", $item['item_id']);
         mysqli_stmt_execute($stmt_ing);
         $result_ing = mysqli_stmt_get_result($stmt_ing);
-        $ingredientes = mysqli_fetch_all($result_ing, MYSQLI_ASSOC);
-
-        $item['ingredientes'] = array_map(function ($ing) {
-            return $ing['nome'];
-        }, $ingredientes);
+        $ingredientes = [];
+        
+        while ($ing = mysqli_fetch_assoc($result_ing)) {
+            $ingredientes[] = $ing['nome'];
+        }
+        
+        $item['ingredientes'] = $ingredientes;
+        $item['subtotal'] = $item['quantidade'] * $item['preco_unitario'];
+        $itens[] = $item;
     }
+    
+    $pedido['itens'] = $itens;
+    $pedidos[] = $pedido;
+}
+
+// DEBUG FINAL
+error_log("USUARIO $id_usuario - PEDIDOS: " . count($pedidos));
+foreach ($pedidos as $p) {
+    error_log("PEDIDO {$p['pedido_id']} - ITENS: " . count($p['itens']));
 }
 ?>
 
@@ -663,13 +676,16 @@ foreach ($pedidos as &$pedido) {
         }
 
         /* Classes para pedidos minimizados */
+        .pedido.minimizado {
+            margin-bottom: -100px;
+        }
+
         .pedido.minimizado .pedido-container {
             display: none;
         }
 
         .pedido.minimizado .pedido-header {
             border-radius: 25px;
-            margin-bottom: 20px;
         }
 
         .toggle-pedido {
@@ -689,7 +705,7 @@ foreach ($pedidos as &$pedido) {
         .header-com-toggle {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
         }
 
         /* Estados da barra de progresso */
@@ -802,15 +818,16 @@ foreach ($pedidos as &$pedido) {
                 <div class="pedidos">
                     <?php if (empty($pedidos)): ?>
                         <div class="sem-pedidos">
-                            <p style="font-size: 18px; margin-top: 10px;">Nenhum pedido encontrado.</p>
+                            <i class="fas fa-pizza-slice"></i>
+                            <p>Nenhum pedido encontrado</p>
                         </div>
                     <?php else: ?>
                         <?php foreach ($pedidos as $pedido): ?>
-                            <?php
-                            $estaFinalizado = in_array($pedido['estado_id'], [4, 5]); // 4=Entregue, 5=Cancelado
+                            <?php 
+                            $estaFinalizado = in_array($pedido['estado_id'], [4, 5]);
                             $classeMinimizado = $estaFinalizado ? 'minimizado' : '';
                             ?>
-
+                            
                             <div class="pedido <?php echo $classeMinimizado; ?>" data-pedido-id="<?php echo $pedido['pedido_id']; ?>">
                                 <div class="pedido-header">
                                     <div class="header-com-toggle">
@@ -829,18 +846,26 @@ foreach ($pedidos as &$pedido) {
                                                         <div class="item">
                                                             <div class="item-content">
                                                                 <div class="top">
-                                                                    <h3 class="qtd-nome"><?php echo $item['quantidade']; ?> × <?php echo htmlspecialchars($item['nome']); ?></h3>
-                                                                    <h3 class="preco">R$ <?php echo number_format($item['subtotal'], 2, ',', '.'); ?></h3>
+                                                                    <h3 class="qtd-nome">
+                                                                        <?php echo $item['quantidade']; ?> × <?php echo htmlspecialchars($item['nome']); ?>
+                                                                    </h3>
+                                                                    <h3 class="preco">
+                                                                        R$ <?php echo number_format($item['subtotal'], 2, ',', '.'); ?>
+                                                                    </h3>
                                                                 </div>
                                                                 <div class="bottom">
                                                                     <?php if (!empty($item['ingredientes'])): ?>
                                                                         <div class="ingredientes-container">
-                                                                            <h3 class="ingredientes"><?php echo htmlspecialchars(implode(', ', $item['ingredientes'])); ?></h3>
+                                                                            <h3 class="ingredientes">
+                                                                                <?php echo htmlspecialchars(implode(', ', $item['ingredientes'])); ?>
+                                                                            </h3>
                                                                         </div>
                                                                     <?php endif; ?>
                                                                     <?php if (!empty($item['observacao'])): ?>
                                                                         <div class="observacao-container">
-                                                                            <h3 class="observacao"><?php echo htmlspecialchars($item['observacao']); ?></h3>
+                                                                            <h3 class="observacao">
+                                                                                <?php echo htmlspecialchars($item['observacao']); ?>
+                                                                            </h3>
                                                                         </div>
                                                                     <?php endif; ?>
                                                                 </div>

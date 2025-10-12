@@ -3294,88 +3294,90 @@
         }
 
         // Função adicionarAoCarrinho
-        function adicionarAoCarrinho(item, observacao = '', mostrarAlerta = true) {
-            console.log(' Iniciando adição ao carrinho...');
-            console.log('Item:', item);
+function adicionarAoCarrinho(item, observacao = '', mostrarAlerta = true) {
+    console.log('🛒 Iniciando adição ao carrinho...');
+    console.log('Item recebido:', item);
+    
+    // Garantir que carrinho é um ARRAY
+    if (!window.carrinho || !Array.isArray(window.carrinho)) {
+        console.warn('⚠️ Carrinho não é array, inicializando...');
+        window.carrinho = [];
+    }
 
-            // Garantir que carrinho é um ARRAY
-            if (!window.carrinho || !Array.isArray(window.carrinho)) {
-                console.warn('⚠️ Carrinho não é array, inicializando...');
-                window.carrinho = [];
-            }
+    // Validar item
+    if (!item || typeof item !== 'object') {
+        console.error('❌ Item inválido:', item);
+        return false;
+    }
 
-            // Validar se o item é válido
-            if (!item || typeof item !== 'object') {
-                console.error('❌ Item inválido:', item);
-                alert('Erro: Item inválido');
-                return false;
-            }
+    // Criar ID único mais robusto
+    const itemIdBase = item.id ? item.id.toString().split('_')[0] : 'sem_id';
+    const adicionaisIds = item.adicionais ? 
+        item.adicionais.map(a => a.id).sort().join('_') : '';
+    const observacaoHash = observacao ? 
+        btoa(observacao).substring(0, 10) : '';
+    
+    const itemUniqueId = `${itemIdBase}_${adicionaisIds}_${observacaoHash}_${Date.now()}`;
+    
+    console.log('🔍 Procurando item existente...');
+    console.log('ID único gerado:', itemUniqueId);
+    console.log('Carrinho atual:', window.carrinho);
 
-            // Preparar o item para comparação
-            const itemParaComparar = {
-                id: item.id || 'sem_id',
-                nome: item.nome || 'Item sem nome',
-                descricao: item.descricao || '',
-                preco: typeof item.preco === 'number' ? item.preco : 0,
-                imagem: item.imagem || './assets/placeholder-pizza.jpg',
-                observacao: observacao || '',
-                adicionais: Array.isArray(item.adicionais) ? item.adicionais : [],
-                quantidade: 1
-            };
+    let itemExistente = null;
+    let itemIndex = -1;
 
-            console.log('🔍 Procurando item existente no carrinho...');
-            console.log('Carrinho atual:', window.carrinho);
-            console.log('Tipo do carrinho:', typeof window.carrinho);
-            console.log('É array?', Array.isArray(window.carrinho));
-
-            // Usar método seguro para arrays vazios ou inválidos
-            let itemExistente = null;
-
-            // Método alternativo se .find() não funcionar
-            if (Array.isArray(window.carrinho) && window.carrinho.length > 0) {
-                for (let i = 0; i < window.carrinho.length; i++) {
-                    const produto = window.carrinho[i];
-
-                    // Comparação segura
-                    const baseIdProduto = (produto.id || '').toString().split('_')[0];
-                    const baseIdNovo = (itemParaComparar.id || '').toString().split('_')[0];
-
-                    const mesmaObservacao = (produto.observacao || '') === (itemParaComparar.observacao || '');
-
-                    const adicionaisProduto = JSON.stringify(produto.adicionais || []);
-                    const adicionaisNovo = JSON.stringify(itemParaComparar.adicionais || []);
-                    const mesmosAdicionais = adicionaisProduto === adicionaisNovo;
-
-                    if (baseIdProduto === baseIdNovo && mesmaObservacao && mesmosAdicionais) {
-                        itemExistente = produto;
-                        break;
-                    }
-                }
-            }
-
-            if (itemExistente) {
-                // Se já existe, aumenta a quantidade
-                itemExistente.quantidade = (itemExistente.quantidade || 0) + 1;
-                console.log('➕ Quantidade aumentada para:', itemExistente.quantidade);
-            } else {
-                // Se não existe, adiciona novo item
-                console.log('✅ Adicionando novo item ao carrinho');
-                window.carrinho.push(itemParaComparar);
-            }
-
-            // Salvar imediatamente no localStorage
-            try {
-                localStorage.setItem('carrinho', JSON.stringify(window.carrinho));
-                console.log('💾 Carrinho salvo no localStorage');
-            } catch (error) {
-                console.error('❌ Erro ao salvar no localStorage:', error);
-            }
-
-            console.log('🛒 Carrinho final:', window.carrinho);
-            atualizarCarrinho();
-            atualizarContadorCarrinho();
-            return true;
+    // Buscar item existente
+    for (let i = 0; i < window.carrinho.length; i++) {
+        const produto = window.carrinho[i];
+        
+        // Comparação mais precisa
+        const mesmoNome = produto.nome === item.nome;
+        const mesmaObservacao = (produto.observacao || '') === (observacao || '');
+        const mesmosAdicionais = JSON.stringify(produto.adicionais || []) === 
+                                JSON.stringify(item.adicionais || []);
+        
+        if (mesmoNome && mesmaObservacao && mesmosAdicionais) {
+            itemExistente = produto;
+            itemIndex = i;
+            break;
         }
+    }
+
+    if (itemExistente) {
+        // Se já existe, aumenta a quantidade
+        console.log('➕ Item existente encontrado, aumentando quantidade');
+        itemExistente.quantidade += 1;
+        window.carrinho[itemIndex] = itemExistente;
+    } else {
+        // Se não existe, adiciona novo item
+        console.log('✅ Adicionando novo item ao carrinho');
+        const novoItem = {
+            id: itemUniqueId,
+            nome: item.nome || 'Item sem nome',
+            descricao: item.descricao || '',
+            preco: typeof item.preco === 'number' ? item.preco : 0,
+            imagem: item.imagem || './assets/placeholder-pizza.jpg',
+            observacao: observacao || '',
+            adicionais: Array.isArray(item.adicionais) ? [...item.adicionais] : [],
+            quantidade: 1
+        };
+        
+        window.carrinho.push(novoItem);
+        console.log('Novo item adicionado:', novoItem);
+    }
+
+    // Salvar no localStorage
+    try {
+        localStorage.setItem('carrinho', JSON.stringify(window.carrinho));
+        console.log('💾 Carrinho salvo. Total de itens:', window.carrinho.length);
+    } catch (error) {
+        console.error('❌ Erro ao salvar no localStorage:', error);
+    }
+
+    atualizarCarrinho();
+    atualizarContadorCarrinho();
+    return true;
+}
 
         function atualizarCarrinho() {
             console.log('🔄 Atualizando interface do carrinho...');
