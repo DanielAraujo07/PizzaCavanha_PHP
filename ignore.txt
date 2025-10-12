@@ -1,0 +1,2 @@
+COMANDO PARA INICIAR O DESENVOLVIMENTO DO PizzaCavanha_PHP:
+    ./start_pizzacavanha.sh
