@@ -1,4 +1,6 @@
-<?php include "verifica_login.php"; ?>
+<?php 
+include "verifica_login.php";
+?>
 
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -1966,30 +1968,46 @@
                 <ul>
                     <li><a href="#" class="nav-link" data-page="home">Início</a></li>
                     <li><a href="#" class="nav-link" data-page="cardapio">Cardápio</a></li>
-                    <!-- <li><a href="#" class="nav-link" data-page="monte-sua-pizza">Monte sua Pizza</a></li> -->
                     <li><a href="#" class="nav-link" data-page="carrinho">Carrinho</a></li>
+                    
+                    <!-- Menu para funcionários e admin -->
+                    <?php if ($_SESSION['class_nivel'] >= 2): ?>
+                        <li><a href="funcionario/">Área do Funcionário</a></li>
+                    <?php endif; ?>
+                    
+                    <?php if ($_SESSION['class_nivel'] >= 4): ?>
+                        <li><a href="admin/">Painel Admin</a></li>
+                    <?php endif; ?>
                     <li><a href="pong.php">Esperando a Pizza?</a></li>
                 </ul>
+                
                 <div class="container-usuario">
                     <input type="checkbox" id="button-user">
-
                     <div class="btn-usuario">
                         <label for="button-user" class="imagem-usuario">
                             <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="#E0E0E0" class="bi bi-person" viewBox="0 0 16 16">
-                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z" />
+                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
                             </svg>
                         </label>
                     </div>
-
                     <div class="opt-usuario">
                         <div class="nome-usuario">
                             <p>
-                                Olá, <?php echo isset($_SESSION['nome']) ? htmlspecialchars($_SESSION['nome']) : 'Visitante'; ?>!
+                                Olá, <?php echo htmlspecialchars($_SESSION['nome']); ?>!
                             </p>
                         </div>
                         <ul>
                             <li><a href="user/sua-conta.php" class="opt-user-link">Sua Conta</a></li>
                             <li><a href="user/seus-pedidos.php" class="opt-user-link">Seus Pedidos</a></li>
+                            
+                            <!-- Links extras para funcionários -->
+                            <?php if ($_SESSION['class_nivel'] >= 2): ?>
+                                <li><a href="funcionario/pedidos.php" class="opt-user-link">Gerenciar Pedidos</a></li>
+                            <?php endif; ?>
+                            
+                            <?php if ($_SESSION['class_nivel'] >= 3): ?>
+                                <li><a href="funcionario/cozinha.php" class="opt-user-link">Cozinha</a></li>
+                            <?php endif; ?>
                         </ul>
                         <hr>
                         <div class="sair-usuario">

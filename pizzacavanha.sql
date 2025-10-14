@@ -1,18 +1,20 @@
 CREATE DATABASE pizzacavanha;
 USE pizzacavanha;
 
-CREATE TABLE clientes (
+CREATE TABLE user_classes (
+    id              INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nome            VARCHAR (45) NOT NULL,
+    nivel           INT NOT NULL
+);
+CREATE TABLE users (
     id              INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     nome            VARCHAR (45) NOT NULL,
     senha           VARCHAR (255) NOT NULL,
     email           VARCHAR (64) NOT NULL UNIQUE,
-    telefone        VARCHAR (20) NOT NULL
-);
-CREATE TABLE admins (
-    id              INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    nome            VARCHAR (45) NOT NULL,
-    senha           VARCHAR (255) NOT NULL,
-    email           VARCHAR (64) NOT NULL UNIQUE
+    telefone        VARCHAR (20) NOT NULL,
+    class_id        INT NOT NULL DEFAULT 1,
+
+    FOREIGN KEY (class_id) REFERENCES user_classes(id)
 );
 CREATE TABLE tipos_categoria (
 	id				INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -91,7 +93,7 @@ CREATE TABLE pedido (
 	valor           DECIMAL (10, 2) NOT NULL,
     horario         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (id_cliente) REFERENCES clientes (id),
+    FOREIGN KEY (id_cliente) REFERENCES users (id),
     FOREIGN KEY (id_estado) REFERENCES estados (id),
     FOREIGN KEY (id_entrega) REFERENCES entrega (id),
     FOREIGN KEY (id_formapag) REFERENCES formapag (id)
@@ -118,7 +120,7 @@ CREATE TABLE tamanhos (
         valor 			DECIMAL(10, 2) NOT NULL,
         data_adicao 	TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
    
-        FOREIGN KEY (id_cliente) REFERENCES clientes(id),
+        FOREIGN KEY (id_cliente) REFERENCES users(id),
         FOREIGN KEY (id_car_itens) REFERENCES carrinho_itens(id)
     );
 
@@ -133,12 +135,23 @@ CREATE TABLE tamanhos (
 */
 
 -- INSERT INTOs
-    INSERT INTO clientes (nome, senha, email, telefone) VALUES
-		('User001', SHA2('senha', 512), 'user@email.com', '(11) 11111-1111'),
-		('User002', SHA2('senha2', 512), 'user2@email.com', '(11) 11111-1111'),
-		('User003', SHA2('senha3', 512), 'user3@email.com', '(11) 11111-1111');
-    INSERT INTO admins (nome, senha, email) VALUES
-		('Admin', SHA2('admin', 512), 'admin@email.com'); 
+    INSERT INTO user_classes (nome, nivel) VALUES
+        ('Cliente', 1),
+        ('Atendente', 2),
+        ('Entregador', 3),
+        ('Cozinheiro', 4),
+        ('Financeiro', 5),
+        ('Admin', 6);
+
+    INSERT INTO users (nome, senha, email, telefone, class_id) VALUES
+		('User001', SHA2('senha', 512), 'user@email.com', '(11) 11111-1111', 1),
+		('User002', SHA2('senha2', 512), 'user2@email.com', '(11) 11111-1111', 1),
+		('User003', SHA2('senha3', 512), 'user3@email.com', '(11) 11111-1111', 1),
+        ('Atendente001', SHA2('senha', 512), 'atendente@email.com', '(22) 22222-2222', 2),
+        ('Entregador001', SHA2('senha', 512), 'entregador@email.com', '(33) 33333-3333', 3),
+        ('Cozinheiro001', SHA2('senha', 512), 'cozinheiro@email.com', '(44) 44444-4444', 4),
+        ('Financeiro001', SHA2('senha', 512), 'financeiro@email.com', '(55) 55555-5555', 5),
+        ('Admin001', SHA2('admin', 512), 'admin@email.com', '(00) 00000-0000', 6);
 	INSERT INTO tipos_categoria (nome) VALUES
 		('Salgado'),
         ('Doce'),
@@ -191,9 +204,9 @@ CREATE TABLE tamanhos (
         ('Retirada');
 
 -- SELECT FROMs
-/*
-	SELECT * FROM clientes;
-	SELECT * FROM admins;
+
+    SELECT * FROM user_classes;
+	SELECT * FROM users;
 	SELECT * FROM categorias;
 	SELECT * FROM produtos;
 	SELECT * FROM itens;
@@ -207,12 +220,12 @@ CREATE TABLE tamanhos (
 	SELECT * FROM formapag;
 	SELECT * FROM tipo_entrega;
 	SELECT * FROM entrega;
-*/
+
 
 -- DELETE FROMs
 /*
-	DELETE FROM clientes;
-	DELETE FROM admins;
+    DELETE FROM classes;
+	DELETE FROM users;
 	DELETE FROM tipos_categoria;
 	DELETE FROM categorias;
 	DELETE FROM produtos;

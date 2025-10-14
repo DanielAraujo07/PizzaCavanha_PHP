@@ -1,4 +1,9 @@
 <?php
+// ATIVAR EXIBIÇÃO DE ERROS (remova depois de corrigir)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+
 session_start();
 include "restrito/conexao.php";
 
@@ -7,41 +12,44 @@ if (isset($_POST['email'])) {
     $email = $_POST['email'];
     $senha = hash('sha512', $_POST['senha']);
 
-    $sql = "SELECT * FROM `clientes` WHERE email = '$email' AND senha = '$senha'";
-    $result = mysqli_query($conn, $sql);
+    // Buscar usuário com informações da classe
+    $sql = "SELECT u.*, uc.nome as class_nome, uc.nivel as class_nivel 
+            FROM users u 
+            JOIN user_classes uc ON u.class_id = uc.id 
+            WHERE u.email = ? AND u.senha = ?";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "ss", $email, $senha);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 
     if ($result && mysqli_num_rows($result) == 1) {
         $usuario = mysqli_fetch_assoc($result);
+        
+        // Configurar sessão
         $_SESSION['email'] = $email;
         $_SESSION['id'] = $usuario['id'];
         $_SESSION['nome'] = $usuario['nome'];
+        $_SESSION['class_id'] = $usuario['class_id'];
+        $_SESSION['class_nome'] = $usuario['class_nome'];
+        $_SESSION['class_nivel'] = $usuario['class_nivel'];
         $_SESSION['logado'] = true;
 
-        // Verificar se é admin
-        $sql_admin = "SELECT * FROM `admins` WHERE email = '$email' AND senha = '$senha'";
-        $result_admin = mysqli_query($conn, $sql_admin);
-
-        if ($result_admin && mysqli_num_rows($result_admin) == 1) {
-            $admin = mysqli_fetch_assoc($result_admin);
-            $_SESSION['email_adm'] = $email;
-            $_SESSION['id_adm'] = $admin['id'];
-            $_SESSION['nome_adm'] = $admin['nome'];
-            
-            // Redirecionar para painel admin
+        // Redirecionar baseado na classe
+        if ($usuario['class_nivel'] >= 6) { // Admin
             header("Location: restrito/admin/");
-            exit();
-        } else {
-            $_SESSION['tipo_usuario'] = 'cliente';
+        } elseif ($usuario['class_nivel'] >= 2) { // Funcionários
+            header("Location: restrito/funcionario/");
+        } else { // Cliente
             header("Location: restrito/index.php");
-            exit();
         }
+        exit();
         
     } else {
         $login_error = "Usuário ou Senha Inválidos";
     }
 }
 
-// Processar Cadastro
+// Processar Cadastro (sempre cria como Cliente - nivel 1)
 if (isset($_POST['nome'])) {
     $nome = $_POST['nome'];
     $nomeCorrigido = ucwords(strtolower($nome));
@@ -50,9 +58,10 @@ if (isset($_POST['nome'])) {
     $telefone = $_POST['telefone'];
     $email = $_POST['email'];
     $senha = hash('sha512', $_POST['senha']);
+    $class_id = 1; // Sempre cliente para novos cadastros
 
     // Verificar se email já existe
-    $check_sql = "SELECT email FROM clientes WHERE email = ?";
+    $check_sql = "SELECT email FROM users WHERE email = ?";
     $check_stmt = mysqli_prepare($conn, $check_sql);
     mysqli_stmt_bind_param($check_stmt, "s", $email);
     mysqli_stmt_execute($check_stmt);
@@ -61,14 +70,14 @@ if (isset($_POST['nome'])) {
     if (mysqli_stmt_num_rows($check_stmt) > 0) {
         $login_error = "Este E-mail já foi cadastrado";
     } else {
-        // Inserir novo usuário
-        $insert_sql = "INSERT INTO clientes (nome, senha, email, telefone) VALUES (?, ?, ?, ?)";
+        // Inserir novo usuário como Cliente
+        $insert_sql = "INSERT INTO users (nome, senha, email, telefone, class_id) VALUES (?, ?, ?, ?, ?)";
         $insert_stmt = mysqli_prepare($conn, $insert_sql);
-        mysqli_stmt_bind_param($insert_stmt, "ssss", $nome, $senha, $email, $telefone);
+        mysqli_stmt_bind_param($insert_stmt, "ssssi", $nome, $senha, $email, $telefone, $class_id);
 
         if (mysqli_stmt_execute($insert_stmt)) {
             $cadastro_success = "Cadastro realizado com sucesso!";
-            // Redirecionar ou mostrar mensagem
+            // Não redireciona automaticamente, mostra mensagem de sucesso
         } else {
             $cadastro_error = "Erro ao cadastrar: " . mysqli_error($conn);
         }
@@ -446,65 +455,66 @@ if (isset($_POST['nome'])) {
         </div>
     </section>
 </body>
-<script>
-    // Navegação entre páginas
-    // Função para mostrar a página selecionada
-    function showPage(pageId) {
-        // Esconde todas as páginas
-        document.querySelectorAll('.page').forEach(page => {
-            page.classList.remove('active');
+    <script>
+        // Navegação entre páginas
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = this.getAttribute('data-page');
+                showPage(page);
+            });
         });
 
-        // Mostra a página solicitada
-        document.getElementById(pageId).classList.add('active');
-    }
+        let campoTelefone = document.querySelector(".form-control-telefone");
+        
+        function formatarTelefone() {
+            let valor = campoTelefone.value.replace(/\D/g, '');
+            let tamanho = valor.length;
 
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const page = this.getAttribute('data-page');
-            showPage(page);
-        });
-    });
-
-    let campoTelefone = document.querySelector(".form-control-telefone");
-    // Função para formatar o telefone
-    function formatarTelefone() {
-        let valor = campoTelefone.value.replace(/\D/g, ''); // Remove tudo que não é dígito
-        let tamanho = valor.length;
-
-        if (tamanho > 0) {
-            valor = '(' + valor;
-            if (tamanho > 2) {
-                valor = [valor.slice(0, 3), ') ', valor.slice(3)].join('');
-                if (tamanho > 7) {
-                    valor = [valor.slice(0, 10), '-', valor.slice(10)].join('');
+            if (tamanho > 0) {
+                valor = '(' + valor;
+                if (tamanho > 2) {
+                    valor = [valor.slice(0, 3), ') ', valor.slice(3)].join('');
+                    if (tamanho > 7) {
+                        valor = [valor.slice(0, 10), '-', valor.slice(10)].join('');
+                    }
                 }
             }
-        }
 
-        campoTelefone.value = valor.slice(0, 15); // Limita ao máximo de 15 caracteres
-    }
-    // Evento para formatar enquanto digita
-    campoTelefone.addEventListener('input', formatarTelefone);
-    // Evento para validar a entrada (permite apenas números e formatação)
-    campoTelefone.addEventListener('keypress', function(e) {
-        // Permite: números (0-9), backspace, tab, enter, setas, delete
-        // e os caracteres especiais que fazem parte da formatação ( ) - e espaço
-        if (e.key.match(/[0-9()\-\s]/) ||
-            e.key === 'Backspace' ||
-            e.key === 'Tab' ||
-            e.key === 'Enter' ||
-            e.key === 'ArrowLeft' ||
-            e.key === 'ArrowRight' ||
-            e.key === 'Delete') {
-            return true;
-        } else {
-            e.preventDefault();
-            return false;
+            campoTelefone.value = valor.slice(0, 15);
         }
-    });
-</script>
+        
+        campoTelefone.addEventListener('input', formatarTelefone);
+        
+        campoTelefone.addEventListener('keypress', function(e) {
+            if (e.key.match(/[0-9()\-\s]/) ||
+                e.key === 'Backspace' ||
+                e.key === 'Tab' ||
+                e.key === 'Enter' ||
+                e.key === 'ArrowLeft' ||
+                e.key === 'ArrowRight' ||
+                e.key === 'Delete') {
+                return true;
+            } else {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Se houve cadastro com sucesso, volta para a página de login
+        <?php if (isset($cadastro_success)): ?>
+            setTimeout(() => {
+                showPage('login');
+            }, 1000);
+        <?php endif; ?>
+    </script>
 
 </html>

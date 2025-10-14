@@ -686,7 +686,7 @@
                         $id_usuario = $_SESSION['id'];
 
                         // Verificar se email já existe (exceto para o usuário atual)
-                        $check_sql = "SELECT id FROM clientes WHERE email = ? AND id != ?";
+                        $check_sql = "SELECT id FROM users WHERE email = ? AND id != ?";
                         $check_stmt = mysqli_prepare($conn, $check_sql);
                         mysqli_stmt_bind_param($check_stmt, "si", $email, $id_usuario);
                         mysqli_stmt_execute($check_stmt);
@@ -697,7 +697,7 @@
                             $tipo_mensagem = "erro";
                         } else {
                             // Atualizar dados
-                            $update_sql = "UPDATE clientes SET nome = ?, telefone = ?, email = ? WHERE id = ?";
+                            $update_sql = "UPDATE users SET nome = ?, telefone = ?, email = ? WHERE id = ?";
                             $update_stmt = mysqli_prepare($conn, $update_sql);
                             mysqli_stmt_bind_param($update_stmt, "sssi", $nome, $telefone, $email, $id_usuario);
 
@@ -720,7 +720,7 @@
                         $id_usuario = $_SESSION['id'];
 
                         // Verificar senha atual
-                        $check_senha_sql = "SELECT senha FROM clientes WHERE id = ?";
+                        $check_senha_sql = "SELECT senha FROM users WHERE id = ?";
                         $check_senha_stmt = mysqli_prepare($conn, $check_senha_sql);
                         mysqli_stmt_bind_param($check_senha_stmt, "i", $id_usuario);
                         mysqli_stmt_execute($check_senha_stmt);
@@ -739,7 +739,7 @@
                         } else {
                             // Atualizar senha
                             $nova_senha_hash = hash('sha512', $nova_senha);
-                            $update_senha_sql = "UPDATE clientes SET senha = ? WHERE id = ?";
+                            $update_senha_sql = "UPDATE users SET senha = ? WHERE id = ?";
                             $update_senha_stmt = mysqli_prepare($conn, $update_senha_sql);
                             mysqli_stmt_bind_param($update_senha_stmt, "si", $nova_senha_hash, $id_usuario);
 
@@ -756,7 +756,7 @@
 
                 // Buscar dados atualizados do usuário
                 $id_usuario = $_SESSION['id'];
-                $sql = "SELECT nome, email, telefone FROM clientes WHERE id = ?";
+                $sql = "SELECT nome, email, telefone FROM users WHERE id = ?";
                 $stmt = mysqli_prepare($conn, $sql);
                 mysqli_stmt_bind_param($stmt, "i", $id_usuario);
                 mysqli_stmt_execute($stmt);

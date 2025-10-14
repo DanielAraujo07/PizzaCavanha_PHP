@@ -818,7 +818,6 @@ foreach ($pedidos as $p) {
                 <div class="pedidos">
                     <?php if (empty($pedidos)): ?>
                         <div class="sem-pedidos">
-                            <i class="fas fa-pizza-slice"></i>
                             <p>Nenhum pedido encontrado</p>
                         </div>
                     <?php else: ?>
