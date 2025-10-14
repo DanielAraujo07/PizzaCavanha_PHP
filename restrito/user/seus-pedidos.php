@@ -189,9 +189,10 @@ foreach ($pedidos as $p) {
 
         nav {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
-            width: 550px;
+            gap: 10%;
+            width: 650px;
         }
 
         nav ul {
@@ -246,7 +247,7 @@ foreach ($pedidos as $p) {
         .opt-usuario {
             display: none;
             position: absolute;
-            width: 220px;
+            width: 240px;
             margin-top: 55px;
             padding: 15px;
             background-color: #242424;

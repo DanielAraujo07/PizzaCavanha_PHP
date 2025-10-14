@@ -1,5 +1,4 @@
 <?php
-//include "verifica_admin.php";
 include "../conexao.php";
 
 // Processar formulários de administração aqui

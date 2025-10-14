@@ -1,4 +1,4 @@
-<?php 
+<?php
 include "verifica_login.php";
 ?>
 
@@ -64,6 +64,10 @@ include "verifica_login.php";
             border-bottom: 1px solid var(--primary-color);
         }
 
+                header a {
+            text-decoration: none;
+        }
+
         .header-container {
             display: flex;
             width: 100%;
@@ -72,8 +76,33 @@ include "verifica_login.php";
             padding: 10px 0;
         }
 
-        header a {
+                nav {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10%;
+            align-items: center;
+            width: 650px;
+        }
+
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+
+        nav a {
             text-decoration: none;
+            color: var(--text-color);
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        nav ul a:hover {
+            color: var(--primary-color);
+            background-color: rgba(255, 165, 0, 0.1);
         }
 
         .logo {
@@ -97,33 +126,6 @@ include "verifica_login.php";
             h1 {
                 text-shadow: 0 0 15px #ffa50080;
             }
-        }
-
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 550px;
-        }
-
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 20px;
-        }
-
-        nav a {
-            text-decoration: none;
-            color: var(--text-color);
-            font-weight: 600;
-            padding: 5px 10px;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-        }
-
-        nav ul a:hover {
-            color: var(--primary-color);
-            background-color: rgba(255, 165, 0, 0.1);
         }
 
         .container-usuario {
@@ -158,7 +160,7 @@ include "verifica_login.php";
         .opt-usuario {
             display: none;
             position: absolute;
-            width: 220px;
+            width: 240px;
             margin-top: 55px;
             padding: 15px;
             background-color: #242424;
@@ -1969,24 +1971,17 @@ include "verifica_login.php";
                     <li><a href="#" class="nav-link" data-page="home">Início</a></li>
                     <li><a href="#" class="nav-link" data-page="cardapio">Cardápio</a></li>
                     <li><a href="#" class="nav-link" data-page="carrinho">Carrinho</a></li>
-                    
-                    <!-- Menu para funcionários e admin -->
-                    <?php if ($_SESSION['class_nivel'] >= 2): ?>
-                        <li><a href="funcionario/">Área do Funcionário</a></li>
+                    <?php if (($_SESSION['class_nivel'] == 1) || ($_SESSION['class_nivel'] == 6)): ?>
+                        <li><a href="pong.php">Esperando a Pizza?</a></li>
                     <?php endif; ?>
-                    
-                    <?php if ($_SESSION['class_nivel'] >= 4): ?>
-                        <li><a href="admin/">Painel Admin</a></li>
-                    <?php endif; ?>
-                    <li><a href="pong.php">Esperando a Pizza?</a></li>
                 </ul>
-                
+
                 <div class="container-usuario">
                     <input type="checkbox" id="button-user">
                     <div class="btn-usuario">
                         <label for="button-user" class="imagem-usuario">
                             <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="#E0E0E0" class="bi bi-person" viewBox="0 0 16 16">
-                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
+                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z" />
                             </svg>
                         </label>
                     </div>
@@ -1997,17 +1992,11 @@ include "verifica_login.php";
                             </p>
                         </div>
                         <ul>
+                                                                                    <?php if ($_SESSION['class_nivel'] >= 2): ?>
+                                <li><a href="funcionario/index.php" class="opt-user-link">Área do Funcionário</a></li>
+                            <?php endif; ?>
                             <li><a href="user/sua-conta.php" class="opt-user-link">Sua Conta</a></li>
                             <li><a href="user/seus-pedidos.php" class="opt-user-link">Seus Pedidos</a></li>
-                            
-                            <!-- Links extras para funcionários -->
-                            <?php if ($_SESSION['class_nivel'] >= 2): ?>
-                                <li><a href="funcionario/pedidos.php" class="opt-user-link">Gerenciar Pedidos</a></li>
-                            <?php endif; ?>
-                            
-                            <?php if ($_SESSION['class_nivel'] >= 3): ?>
-                                <li><a href="funcionario/cozinha.php" class="opt-user-link">Cozinha</a></li>
-                            <?php endif; ?>
                         </ul>
                         <hr>
                         <div class="sair-usuario">
@@ -3312,90 +3301,90 @@ include "verifica_login.php";
         }
 
         // Função adicionarAoCarrinho
-function adicionarAoCarrinho(item, observacao = '', mostrarAlerta = true) {
-    console.log('🛒 Iniciando adição ao carrinho...');
-    console.log('Item recebido:', item);
-    
-    // Garantir que carrinho é um ARRAY
-    if (!window.carrinho || !Array.isArray(window.carrinho)) {
-        console.warn('⚠️ Carrinho não é array, inicializando...');
-        window.carrinho = [];
-    }
+        function adicionarAoCarrinho(item, observacao = '', mostrarAlerta = true) {
+            console.log('🛒 Iniciando adição ao carrinho...');
+            console.log('Item recebido:', item);
 
-    // Validar item
-    if (!item || typeof item !== 'object') {
-        console.error('❌ Item inválido:', item);
-        return false;
-    }
+            // Garantir que carrinho é um ARRAY
+            if (!window.carrinho || !Array.isArray(window.carrinho)) {
+                console.warn('⚠️ Carrinho não é array, inicializando...');
+                window.carrinho = [];
+            }
 
-    // Criar ID único mais robusto
-    const itemIdBase = item.id ? item.id.toString().split('_')[0] : 'sem_id';
-    const adicionaisIds = item.adicionais ? 
-        item.adicionais.map(a => a.id).sort().join('_') : '';
-    const observacaoHash = observacao ? 
-        btoa(observacao).substring(0, 10) : '';
-    
-    const itemUniqueId = `${itemIdBase}_${adicionaisIds}_${observacaoHash}_${Date.now()}`;
-    
-    console.log('🔍 Procurando item existente...');
-    console.log('ID único gerado:', itemUniqueId);
-    console.log('Carrinho atual:', window.carrinho);
+            // Validar item
+            if (!item || typeof item !== 'object') {
+                console.error('❌ Item inválido:', item);
+                return false;
+            }
 
-    let itemExistente = null;
-    let itemIndex = -1;
+            // Criar ID único mais robusto
+            const itemIdBase = item.id ? item.id.toString().split('_')[0] : 'sem_id';
+            const adicionaisIds = item.adicionais ?
+                item.adicionais.map(a => a.id).sort().join('_') : '';
+            const observacaoHash = observacao ?
+                btoa(observacao).substring(0, 10) : '';
 
-    // Buscar item existente
-    for (let i = 0; i < window.carrinho.length; i++) {
-        const produto = window.carrinho[i];
-        
-        // Comparação mais precisa
-        const mesmoNome = produto.nome === item.nome;
-        const mesmaObservacao = (produto.observacao || '') === (observacao || '');
-        const mesmosAdicionais = JSON.stringify(produto.adicionais || []) === 
-                                JSON.stringify(item.adicionais || []);
-        
-        if (mesmoNome && mesmaObservacao && mesmosAdicionais) {
-            itemExistente = produto;
-            itemIndex = i;
-            break;
+            const itemUniqueId = `${itemIdBase}_${adicionaisIds}_${observacaoHash}_${Date.now()}`;
+
+            console.log('🔍 Procurando item existente...');
+            console.log('ID único gerado:', itemUniqueId);
+            console.log('Carrinho atual:', window.carrinho);
+
+            let itemExistente = null;
+            let itemIndex = -1;
+
+            // Buscar item existente
+            for (let i = 0; i < window.carrinho.length; i++) {
+                const produto = window.carrinho[i];
+
+                // Comparação mais precisa
+                const mesmoNome = produto.nome === item.nome;
+                const mesmaObservacao = (produto.observacao || '') === (observacao || '');
+                const mesmosAdicionais = JSON.stringify(produto.adicionais || []) ===
+                    JSON.stringify(item.adicionais || []);
+
+                if (mesmoNome && mesmaObservacao && mesmosAdicionais) {
+                    itemExistente = produto;
+                    itemIndex = i;
+                    break;
+                }
+            }
+
+            if (itemExistente) {
+                // Se já existe, aumenta a quantidade
+                console.log('➕ Item existente encontrado, aumentando quantidade');
+                itemExistente.quantidade += 1;
+                window.carrinho[itemIndex] = itemExistente;
+            } else {
+                // Se não existe, adiciona novo item
+                console.log('✅ Adicionando novo item ao carrinho');
+                const novoItem = {
+                    id: itemUniqueId,
+                    nome: item.nome || 'Item sem nome',
+                    descricao: item.descricao || '',
+                    preco: typeof item.preco === 'number' ? item.preco : 0,
+                    imagem: item.imagem || './assets/placeholder-pizza.jpg',
+                    observacao: observacao || '',
+                    adicionais: Array.isArray(item.adicionais) ? [...item.adicionais] : [],
+                    quantidade: 1
+                };
+
+                window.carrinho.push(novoItem);
+                console.log('Novo item adicionado:', novoItem);
+            }
+
+            // Salvar no localStorage
+            try {
+                localStorage.setItem('carrinho', JSON.stringify(window.carrinho));
+                console.log('💾 Carrinho salvo. Total de itens:', window.carrinho.length);
+            } catch (error) {
+                console.error('❌ Erro ao salvar no localStorage:', error);
+            }
+
+            atualizarCarrinho();
+            atualizarContadorCarrinho();
+            return true;
         }
-    }
-
-    if (itemExistente) {
-        // Se já existe, aumenta a quantidade
-        console.log('➕ Item existente encontrado, aumentando quantidade');
-        itemExistente.quantidade += 1;
-        window.carrinho[itemIndex] = itemExistente;
-    } else {
-        // Se não existe, adiciona novo item
-        console.log('✅ Adicionando novo item ao carrinho');
-        const novoItem = {
-            id: itemUniqueId,
-            nome: item.nome || 'Item sem nome',
-            descricao: item.descricao || '',
-            preco: typeof item.preco === 'number' ? item.preco : 0,
-            imagem: item.imagem || './assets/placeholder-pizza.jpg',
-            observacao: observacao || '',
-            adicionais: Array.isArray(item.adicionais) ? [...item.adicionais] : [],
-            quantidade: 1
-        };
-        
-        window.carrinho.push(novoItem);
-        console.log('Novo item adicionado:', novoItem);
-    }
-
-    // Salvar no localStorage
-    try {
-        localStorage.setItem('carrinho', JSON.stringify(window.carrinho));
-        console.log('💾 Carrinho salvo. Total de itens:', window.carrinho.length);
-    } catch (error) {
-        console.error('❌ Erro ao salvar no localStorage:', error);
-    }
-
-    atualizarCarrinho();
-    atualizarContadorCarrinho();
-    return true;
-}
 
         function atualizarCarrinho() {
             console.log('🔄 Atualizando interface do carrinho...');

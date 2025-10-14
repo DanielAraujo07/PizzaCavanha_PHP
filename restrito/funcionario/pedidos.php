@@ -1,9 +1,3 @@
-<?php 
-include "../verifica_login.php";
-// Somente entregadores (nivel 2+) podem acessar
-redirecionar_se_nao_permitido(2, '../index.php');
-?>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
