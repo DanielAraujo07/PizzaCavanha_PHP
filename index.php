@@ -7,6 +7,16 @@ ini_set('display_startup_errors', 1);
 session_start();
 include "restrito/conexao.php";
 
+if (isset($_SESSION['logado']) && $_SESSION['logado'] === true) {
+    // Redirecionar baseado no nível de acesso
+    if ($_SESSION['class_nivel'] >= 2) {
+        header("Location: restrito/funcionario/");
+    } else {
+        header("Location: restrito/index.php");
+    }
+    exit();
+}
+
 // Processar Login
 if (isset($_POST['email'])) {
     $email = $_POST['email'];
@@ -34,12 +44,12 @@ if (isset($_POST['email'])) {
         $_SESSION['class_nivel'] = $usuario['class_nivel'];
         $_SESSION['logado'] = true;
 
-        // Redirecionar baseado na classe
-        if ($usuario['class_nivel'] >= 6) { // Admin
-            header("Location: restrito/admin/");
-        } elseif ($usuario['class_nivel'] >= 2) { // Funcionários
+        // Funcionários
+        if ($usuario['class_nivel'] >= 2) {
             header("Location: restrito/funcionario/");
-        } else { // Cliente
+        } 
+        // Clientes
+        else {
             header("Location: restrito/index.php");
         }
         exit();

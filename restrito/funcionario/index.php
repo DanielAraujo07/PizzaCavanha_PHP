@@ -1,5 +1,5 @@
-<?php include 
-'../verifica_login.php';
+<?php include
+    '../verifica_login.php';
 
 if ($_SESSION['class_nivel'] == 1) {
     header('Location: ../index.php');
@@ -9,6 +9,7 @@ if ($_SESSION['class_nivel'] == 1) {
 
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -42,7 +43,7 @@ if ($_SESSION['class_nivel'] == 1) {
             background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
             color: white;
             padding: 1rem 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .admin-nav {
@@ -107,7 +108,7 @@ if ($_SESSION['class_nivel'] == 1) {
         }
 
         .admin-menu li {
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .admin-menu a {
@@ -120,7 +121,8 @@ if ($_SESSION['class_nivel'] == 1) {
             transition: background 0.3s;
         }
 
-        .admin-menu a:hover, .admin-menu a.active {
+        .admin-menu a:hover,
+        .admin-menu a.active {
             background: var(--admin-primary);
             border-left: 4px solid var(--admin-accent);
         }
@@ -146,7 +148,7 @@ if ($_SESSION['class_nivel'] == 1) {
             background: white;
             padding: 1.5rem;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             border-left: 4px solid var(--admin-accent);
         }
 
@@ -173,7 +175,7 @@ if ($_SESSION['class_nivel'] == 1) {
             background: white;
             padding: 1.5rem;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .recent-orders h2 {
@@ -186,7 +188,8 @@ if ($_SESSION['class_nivel'] == 1) {
             border-collapse: collapse;
         }
 
-        th, td {
+        th,
+        td {
             padding: 1rem;
             text-align: left;
             border-bottom: 1px solid #eee;
@@ -234,11 +237,12 @@ if ($_SESSION['class_nivel'] == 1) {
         }
     </style>
 </head>
+
 <body>
     <header class="admin-header">
         <nav class="admin-nav">
             <div class="admin-logo">
-                <h1>🍕 Painel Administrativo</h1>
+                <h1><i class="fa-solid fa-user-tie" style="margin-right: 10px;"></i> Painel do Funcionário</h1>
             </div>
             <div class="admin-user">
                 <div class="admin-user-info">
@@ -256,11 +260,11 @@ if ($_SESSION['class_nivel'] == 1) {
         <aside class="admin-sidebar">
             <ul class="admin-menu">
                 <li><a href="index.php" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <li><a href="produtos.php"><i class="fas fa-pizza-slice"></i> Gerenciar Produtos</a></li>
-                <li><a href="ingredientes.php"><i class="fas fa-carrot"></i> Gerenciar Ingredientes</a></li>
+                <li><a href="produtos.php"><i class="fas fa-pizza-slice"></i> Produtos</a></li>
+                <li><a href="ingredientes.php"><i class="fas fa-carrot"></i> Ingredientes</a></li>
                 <li><a href="pedidos.php"><i class="fas fa-shopping-cart"></i> Pedidos</a></li>
                 <li><a href="categorias.php"><i class="fas fa-tags"></i> Categorias</a></li>
-                <li><a href="clientes.php"><i class="fas fa-users"></i> Clientes</a></li>
+                <li><a href="usuarios.php"><i class="fas fa-users"></i> Usuários</a></li>
                 <li><a href="relatorios.php"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
                 <li><a href="../index.php"><i class="fas fa-home"></i> Voltar à Home</a></li>
             </ul>
@@ -335,7 +339,7 @@ if ($_SESSION['class_nivel'] == 1) {
         document.addEventListener('DOMContentLoaded', function() {
             const currentPage = window.location.pathname.split('/').pop();
             const menuLinks = document.querySelectorAll('.admin-menu a');
-            
+
             menuLinks.forEach(link => {
                 if (link.getAttribute('href') === currentPage) {
                     link.classList.add('active');
@@ -344,4 +348,55 @@ if ($_SESSION['class_nivel'] == 1) {
         });
     </script>
 </body>
+
+<!-- 
+    produtos    (4,6)
+    ingredientes(4,6)
+    pedidos     (2,3,4,6)
+    categorias  (6)
+    usuarios    (6)
+    relatorios  (5,6)
+    home        (2,3,4,5,6)
+
+    ===================== PÁGINAS =====================
+
+PRODUTOS:
+    Cadastrar produtos  (6)
+    Editar produtos     (6)
+    Baixa no estoque    (6,4)
+    
+INGREDIENTES:
+    Cadastrar ingred.   (6)
+    Editar Ingred.      (6)
+    Baixa no estoque    (6,4)
+    
+PEDIDOS
+    Pedidos Anteriores  (6)
+    Pedidos em Aberto   (6,4,3,2)
+        detalhad (6,4)
+        resumido (3,2)
+        status   (6,4,3)
+        
+CATEGORIAS
+    estudar dps
+    
+USUÁRIOS
+    crud clientes       (6)
+    crud funcionarios   (6)
+    crud user_classes   (6)
+    (tabela c/ 50 itens per pag.)
+
+RELATÓRIOS
+    Pedidos hoje
+    Vendas/mes
+    Produt. Favoritos
+    Produt. Ativos
+    Clientes Cadast.
+    Funcion. Cadast.
+    Geren. Estoque
+        Qnt comprar
+        
+===================================================
+-->
+
 </html>

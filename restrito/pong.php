@@ -1,4 +1,9 @@
-<?php include "verifica_login.php"; ?>
+<?php include "verifica_login.php"; 
+if (($_SESSION['class_nivel'] != 1) || ($_SESSION['class_nivel'] != 6)):
+    header('Location: index.php?msg=Agora-nao-eh-hora-de-jogar');
+    exit();
+endif;
+?>
 
 <!DOCTYPE html>
 <html lang="pt-BR">
