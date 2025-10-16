@@ -101,8 +101,8 @@ if (isset($_POST['nome'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcur icon" href="restrito/assets/logo.svg" />
     <title>Seja bem Vindo!</title>
+    <link rel="shortcur icon" href="restrito/assets/logo.svg" />
     <!-- Fontes Oswald, Jaro e Rajdhani -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -111,6 +111,9 @@ if (isset($_POST['nome'])) {
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Jaro:opsz@6..72&family=Oswald:wght@200..700&display=swap"
         rel="stylesheet">
+    <!-- Icones Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://kit.fontawesome.com/18b2c31938.js" crossorigin="anonymous"></script>
     <style>
         /* Página de Login */
         :root {

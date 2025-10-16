@@ -14,240 +14,34 @@ if ($_SESSION['class_nivel'] == 1) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Funcionário do Cavanha</title>
-    <link rel="stylesheet" href="css/admin.css">
+    <link rel="shortcur icon" href="../assets/funcionario.svg" />
+    
+    <!-- Fontes Oswald, Jaro e Rajdhani -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jaro:opsz@6..72&family=Oswald:wght@200..700&display=swap"
+        rel="stylesheet">
+
+    <!-- Icones Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --admin-primary: #2c3e50;
-            --admin-secondary: #34495e;
-            --admin-accent: #e74c3c;
-            --admin-success: #27ae60;
-            --admin-warning: #f39c12;
-            --admin-light: #ecf0f1;
-            --admin-dark: #2c3e50;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f6fa;
-            color: #333;
-        }
-
-        .admin-header {
-            background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
-            color: white;
-            padding: 1rem 2rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .admin-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .admin-logo h1 {
-            font-size: 1.5rem;
-            color: var(--admin-light);
-        }
-
-        .admin-user {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .admin-user-info {
-            text-align: right;
-        }
-
-        .admin-user-name {
-            font-weight: bold;
-        }
-
-        .admin-user-role {
-            font-size: 0.8rem;
-            opacity: 0.8;
-        }
-
-        .logout-btn {
-            background: var(--admin-accent);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background 0.3s;
-        }
-
-        .logout-btn:hover {
-            background: #c0392b;
-        }
-
-        .admin-container {
-            display: flex;
-            min-height: calc(100vh - 80px);
-        }
-
-        .admin-sidebar {
-            width: 250px;
-            background: var(--admin-secondary);
-            color: white;
-            padding: 2rem 0;
-        }
-
-        .admin-menu {
-            list-style: none;
-        }
-
-        .admin-menu li {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .admin-menu a {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 2rem;
-            color: white;
-            text-decoration: none;
-            transition: background 0.3s;
-        }
-
-        .admin-menu a:hover,
-        .admin-menu a.active {
-            background: var(--admin-primary);
-            border-left: 4px solid var(--admin-accent);
-        }
-
-        .admin-menu i {
-            width: 20px;
-            text-align: center;
-        }
-
-        .admin-content {
-            flex: 1;
-            padding: 2rem;
-        }
-
-        .dashboard-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid var(--admin-accent);
-        }
-
-        .card h3 {
-            color: var(--admin-dark);
-            margin-bottom: 0.5rem;
-        }
-
-        .card .number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--admin-primary);
-        }
-
-        .card.success {
-            border-left-color: var(--admin-success);
-        }
-
-        .card.warning {
-            border-left-color: var(--admin-warning);
-        }
-
-        .recent-orders {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .recent-orders h2 {
-            margin-bottom: 1rem;
-            color: var(--admin-dark);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        th {
-            background: #f8f9fa;
-            font-weight: 600;
-        }
-
-        .status {
-            padding: 0.25rem 0.5rem;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        .status.processando {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status.enviado {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .status.entregue {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        @media (max-width: 768px) {
-            .admin-container {
-                flex-direction: column;
-            }
-
-            .admin-sidebar {
-                width: 100%;
-            }
-
-            .dashboard-cards {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <script src="https://kit.fontawesome.com/18b2c31938.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="../assets/css/funcionario.css">
 </head>
 
 <body>
     <header class="admin-header">
         <nav class="admin-nav">
             <div class="admin-logo">
-                <h1><i class="fa-solid fa-user-tie" style="margin-right: 10px;"></i> Painel do Funcionário</h1>
+                <h1><i class="fa-solid fa-user-tie"></i> Painel do Funcionário</h1>
             </div>
             <div class="admin-user">
                 <div class="admin-user-info">
-                    <div class="admin-user-name"></div>
-                    <div class="admin-user-role">Administrador</div>
+                    <div class="admin-user-name"><?php echo htmlspecialchars($_SESSION['nome']); ?></div>
+                    &bull;
+                    <div class="admin-user-role"><?php echo htmlspecialchars($_SESSION['class_nome']); ?></div>
                 </div>
                 <a href="../../logout.php" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i> Sair
@@ -259,7 +53,7 @@ if ($_SESSION['class_nivel'] == 1) {
     <div class="admin-container">
         <aside class="admin-sidebar">
             <ul class="admin-menu">
-                <li><a href="index.php" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="#" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                 <li><a href="produtos.php"><i class="fas fa-pizza-slice"></i> Produtos</a></li>
                 <li><a href="ingredientes.php"><i class="fas fa-carrot"></i> Ingredientes</a></li>
                 <li><a href="pedidos.php"><i class="fas fa-shopping-cart"></i> Pedidos</a></li>
@@ -348,55 +142,4 @@ if ($_SESSION['class_nivel'] == 1) {
         });
     </script>
 </body>
-
-<!-- 
-    produtos    (4,6)
-    ingredientes(4,6)
-    pedidos     (2,3,4,6)
-    categorias  (6)
-    usuarios    (6)
-    relatorios  (5,6)
-    home        (2,3,4,5,6)
-
-    ===================== PÁGINAS =====================
-
-PRODUTOS:
-    Cadastrar produtos  (6)
-    Editar produtos     (6)
-    Baixa no estoque    (6,4)
-    
-INGREDIENTES:
-    Cadastrar ingred.   (6)
-    Editar Ingred.      (6)
-    Baixa no estoque    (6,4)
-    
-PEDIDOS
-    Pedidos Anteriores  (6)
-    Pedidos em Aberto   (6,4,3,2)
-        detalhad (6,4)
-        resumido (3,2)
-        status   (6,4,3)
-        
-CATEGORIAS
-    estudar dps
-    
-USUÁRIOS
-    crud clientes       (6)
-    crud funcionarios   (6)
-    crud user_classes   (6)
-    (tabela c/ 50 itens per pag.)
-
-RELATÓRIOS
-    Pedidos hoje
-    Vendas/mes
-    Produt. Favoritos
-    Produt. Ativos
-    Clientes Cadast.
-    Funcion. Cadast.
-    Geren. Estoque
-        Qnt comprar
-        
-===================================================
--->
-
 </html>

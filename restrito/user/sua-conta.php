@@ -8,8 +8,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sua Conta</title>
     <link rel="shortcur icon" href="assets/logo.svg" />
-    <!-- CSS -->
-    <link rel="stylesheet" href="../css/user.css">
     <!-- Fontes Oswald, Jaro e Rajdhani -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,6 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Jaro:opsz@6..72&family=Oswald:wght@200..700&display=swap"
         rel="stylesheet">
     <!-- Icones Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://kit.fontawesome.com/18b2c31938.js" crossorigin="anonymous"></script>
     <style>
         /* Estilos Globais - Dark Mode com Cores Quentes */
@@ -64,6 +63,10 @@
             border-bottom: 1px solid var(--primary-color);
         }
 
+                header a {
+            text-decoration: none;
+        }
+
         .header-container {
             display: flex;
             width: 100%;
@@ -72,8 +75,32 @@
             padding: 10px 0;
         }
 
-        header a {
+        header nav {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10%;
+            align-items: center;
+            width: 700px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 10px;
+        }
+
+        nav a {
             text-decoration: none;
+            color: var(--text-color);
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        nav ul a:hover {
+            color: var(--primary-color);
+            background-color: rgba(255, 165, 0, 0.1);
         }
 
         .logo {
@@ -97,34 +124,6 @@
             h1 {
                 text-shadow: 0 0 15px #ffa50080;
             }
-        }
-
-        nav {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 10%;
-            width: 650px;
-        }
-
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 20px;
-        }
-
-        nav a {
-            text-decoration: none;
-            color: var(--text-color);
-            font-weight: 600;
-            padding: 5px 10px;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-        }
-
-        nav ul a:hover {
-            color: var(--primary-color);
-            background-color: rgba(255, 165, 0, 0.1);
         }
 
         .container-usuario {
@@ -375,9 +374,14 @@
             transition: all 0.3s ease;
             font-family: 'Rajdhani', sans-serif;
             font-weight: 500;
+            border: var(--light-color) 2px solid;
         }
 
-        .menu-lateral a:hover,
+        .menu-lateral a:hover {
+            border: var(--primary-color) 2px solid;
+            background-color: var(--light-color);
+        }
+
         .menu-lateral a.ativo {
             background: var(--primary-color);
             color: #000;
@@ -625,15 +629,22 @@
             </a>
             <nav>
                 <ul>
-                    <li><a href="../index.php">Início</a></li>
-                    <li><a href="../index.php">Cardápio</a></li>
-                    <!-- <li><a href="#">Monte sua Pizza</a></li> -->
-                    <li><a href="../index.php">Carrinho</a></li>
-                    <li><a href="../index.php">Esperando a Pizza?</a></li>
+                    <li><a href="../index.php" class="nav-link" data-page="home">Início</a></li>
+                    <li><a href="../index.php" class="nav-link" data-page="cardapio">Cardápio</a></li>
+                    <li><a href="../index.php" class="nav-link" data-page="carrinho">Carrinho</a></li>
+
+                    <?php if ($_SESSION['class_nivel'] !== 1): ?>
+                        <li><a href="../funcionario/index.php">Área do Funcionário</a></li>
+                    <?php endif; ?>
+
+                    <?php if (($_SESSION['class_nivel'] == 1) || ($_SESSION['class_nivel'] == 6)): ?>
+                        <li><a href="../pong.php">Esperando a Pizza?</a></li>
+                    <?php endif; ?>
+
                 </ul>
+
                 <div class="container-usuario">
                     <input type="checkbox" id="button-user">
-
                     <div class="btn-usuario">
                         <label for="button-user" class="imagem-usuario">
                             <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="#E0E0E0" class="bi bi-person" viewBox="0 0 16 16">
@@ -641,11 +652,10 @@
                             </svg>
                         </label>
                     </div>
-
                     <div class="opt-usuario">
                         <div class="nome-usuario">
                             <p>
-                                Olá, <?php echo isset($_SESSION['nome']) ? htmlspecialchars($_SESSION['nome']) : 'Visitante'; ?>!
+                                Olá, <?php echo htmlspecialchars($_SESSION['nome']); ?>!
                             </p>
                         </div>
                         <ul>

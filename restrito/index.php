@@ -10,7 +10,6 @@ include "verifica_login.php";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pizza do Cavanha</title>
     <link rel="shortcur icon" href="assets/logo.svg" />
-    <!-- <link rel="stylesheet" href="css/style.css">  LINK DO CSS -->
     <!-- Fontes Oswald, Jaro e Rajdhani -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,6 +19,7 @@ include "verifica_login.php";
     <link href="https://fonts.googleapis.com/css2?family=Jaro:opsz@6..72&family=Oswald:wght@200..700&display=swap"
         rel="stylesheet">
     <!-- Icones Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://kit.fontawesome.com/18b2c31938.js" crossorigin="anonymous"></script>
     <style>
         /* Estilos Globais - Dark Mode com Cores Quentes */
@@ -57,14 +57,13 @@ include "verifica_login.php";
         /* Header */
         header {
             background-color: var(--light-color);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 10px #0000004d;
             position: sticky;
             top: 0;
             z-index: 100;
             border-bottom: 1px solid var(--primary-color);
         }
-
-                header a {
+        header a {
             text-decoration: none;
         }
 
@@ -76,19 +75,18 @@ include "verifica_login.php";
             padding: 10px 0;
         }
 
-                nav {
+        nav {
             display: flex;
             justify-content: flex-end;
             gap: 10%;
             align-items: center;
-            width: 650px;
+            width: 800px;
         }
-
 
         nav ul {
             display: flex;
             list-style: none;
-            gap: 20px;
+            gap: 10px;
         }
 
         nav a {
@@ -1971,9 +1969,15 @@ include "verifica_login.php";
                     <li><a href="#" class="nav-link" data-page="home">Início</a></li>
                     <li><a href="#" class="nav-link" data-page="cardapio">Cardápio</a></li>
                     <li><a href="#" class="nav-link" data-page="carrinho">Carrinho</a></li>
+
+                    <?php if ($_SESSION['class_nivel'] !== 1): ?>
+                        <li><a href="funcionario/index.php">Área do Funcionário</a></li>
+                    <?php endif; ?>
+
                     <?php if (($_SESSION['class_nivel'] == 1) || ($_SESSION['class_nivel'] == 6)): ?>
                         <li><a href="pong.php">Esperando a Pizza?</a></li>
                     <?php endif; ?>
+
                 </ul>
 
                 <div class="container-usuario">
@@ -1992,9 +1996,6 @@ include "verifica_login.php";
                             </p>
                         </div>
                         <ul>
-                                                                                    <?php if ($_SESSION['class_nivel'] >= 2): ?>
-                                <li><a href="funcionario/index.php" class="opt-user-link">Área do Funcionário</a></li>
-                            <?php endif; ?>
                             <li><a href="user/sua-conta.php" class="opt-user-link">Sua Conta</a></li>
                             <li><a href="user/seus-pedidos.php" class="opt-user-link">Seus Pedidos</a></li>
                         </ul>

@@ -10,27 +10,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $preco = floatval($_POST['preco']);
         $imagem = mysqli_real_escape_string($conn, $_POST['imagem']);
         $categoria = intval($_POST['categoria']);
-        
+
         $sql = "INSERT INTO produtos (nome, descricao, preco, imagem, id_categoria) 
                 VALUES ('$nome', '$descricao', $preco, '$imagem', $categoria)";
         mysqli_query($conn, $sql);
     }
-    
+
     // Adicionar processamento para outros formulários (ingredientes, etc.)
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
-    <title>Administração - Pizza do Cavanha</title>
-    <link rel="stylesheet" href="css/admin.css">
+    <title>Produtos e Ingredientes</title>
 </head>
+
 <body>
     <div class="admin-container">
         <h1>Painel de Administração</h1>
-        
+
         <div class="admin-sections">
             <!-- Gerenciar Produtos -->
             <section class="admin-section">
@@ -52,13 +53,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </select>
                     <button type="submit" name="adicionar_produto">Adicionar Produto</button>
                 </form>
-                
+
                 <h3>Produtos Existentes</h3>
                 <table>
                     <tr>
                         <th>Nome</th>
                         <th>Preço</th>
                         <th>Categoria</th>
+                        <th>Disponível</th>
                         <th>Ações</th>
                     </tr>
                     <?php
@@ -70,6 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <td>{$row['nome']}</td>
                                 <td>R$ {$row['preco']}</td>
                                 <td>{$row['categoria_nome']}</td>
+                                <td>{$row['disponivel']}</td>
                                 <td>
                                     <a href='editar_produto.php?id={$row['id']}'>Editar</a>
                                     <a href='excluir_produto.php?id={$row['id']}'>Excluir</a>
@@ -79,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ?>
                 </table>
             </section>
-            
+
             <!-- Gerenciar Ingredientes -->
             <section class="admin-section">
                 <h2>Gerenciar Ingredientes</h2>
@@ -89,21 +92,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="text" name="imagem_ingrediente" placeholder="URL da imagem">
                     <button type="submit" name="adicionar_ingrediente">Adicionar Ingrediente</button>
                 </form>
-                
+
                 <h3>Ingredientes Existentes</h3>
                 <table>
                     <tr>
                         <th>Nome</th>
                         <th>Preço</th>
+                        <th>Tipo</th>
+                        <th>Disponível</th>
                         <th>Ações</th>
                     </tr>
                     <?php
-                    $sql = "SELECT * FROM ingredientes";
+                    $sql = "SELECT ing.*, tp.nome as tipo_nome FROM ingredientes ing 
+                            LEFT JOIN tipos_categoria tp ON ing.id_tipo = tp.id";
                     $result = mysqli_query($conn, $sql);
                     while ($row = mysqli_fetch_assoc($result)) {
                         echo "<tr>
                                 <td>{$row['nome']}</td>
                                 <td>R$ {$row['preco']}</td>
+                                <td>{$row['tipo_nome']}</td>
+                                <td>{$row['disponivel']}</td>
                                 <td>
                                     <a href='editar_ingrediente.php?id={$row['id']}'>Editar</a>
                                     <a href='excluir_ingrediente.php?id={$row['id']}'>Excluir</a>
@@ -116,4 +124,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </body>
+
 </html>
