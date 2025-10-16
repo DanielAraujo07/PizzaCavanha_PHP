@@ -217,7 +217,7 @@ if (isset($_POST['nome'])) {
         }
 
         .header-popup .line-1 {
-            width: 130%;
+            width: 110%;
             height: 1px;
             box-shadow: 0px 0px 15px #ffbd43b6;
             border: 1px #FFA520 solid;
