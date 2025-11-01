@@ -56,7 +56,8 @@ include "verifica_login.php";
 
         /* Header */
         header {
-            background-color: var(--light-color);
+            background-color: #1b1b1be0;
+            backdrop-filter: blur(15px);
             box-shadow: 0 2px 10px #0000004d;
             position: sticky;
             top: 0;
@@ -1224,7 +1225,7 @@ include "verifica_login.php";
             font-size: 1.1rem;
         }
 
-        .confirmacao-container button {
+        .confirmacao-container a {
             background-color: #FFA500;
             color: #2c3e50;
             border: none;
@@ -1234,11 +1235,11 @@ include "verifica_login.php";
             font-weight: bold;
             transition: all 0.3s ease;
             font-size: 1rem;
+            text-decoration: none;
         }
 
-        .confirmacao-container button:hover {
+        .confirmacao-container a:hover {
             background-color: #FFD700;
-            transform: translateY(-2px);
         }
 
         .confirmacao-overlay {
@@ -2256,7 +2257,7 @@ include "verifica_login.php";
                 <img src="assets/seloCavanha_Recomendado.png" alt="Pedido Confirmado" class="fade-in">
                 <h2 class="fade-in">Pedido Confirmado!</h2>
                 <p id="confirmacao-texto-carrinho" class="fade-in"></p>
-                <button id="confirmacao-btn-carrinho" class="fade-in">Voltar ao Início</button>
+                <a href="index.php" class="fade-in">Voltar ao Início</a>
             </div>
         </div>
     </section>

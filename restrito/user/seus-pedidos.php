@@ -385,6 +385,12 @@ foreach ($pedidos as $p) {
                 justify-content: center;
                 gap: 20px;
 
+                .item-content {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 15px;
+               }
+
                 .top {
                     display: flex;
                     flex-direction: row;
@@ -396,7 +402,7 @@ foreach ($pedidos as $p) {
                         font-size: 32px;
                         font-family: Rajdhani;
                         font-weight: 700;
-                        max-width: 350px;
+                        max-width: 340px;
                         overflow: hidden;
                         text-overflow: ellipsis;
                         white-space: nowrap;

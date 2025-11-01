@@ -15,7 +15,7 @@ if ($_SESSION['class_nivel'] == 1) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Funcionário do Cavanha</title>
     <link rel="shortcur icon" href="../assets/funcionario.svg" />
-    
+
     <!-- Fontes Oswald, Jaro e Rajdhani -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,7 +35,7 @@ if ($_SESSION['class_nivel'] == 1) {
     <header class="admin-header">
         <nav class="admin-nav">
             <div class="admin-logo">
-                <h1><i class="fa-solid fa-user-tie"></i> Painel do Funcionário</h1>
+                <h1><i class="fa-solid fa-user-tie"></i>Painel do Funcionário</h1>
             </div>
             <div class="admin-user">
                 <div class="admin-user-info">
@@ -142,4 +142,5 @@ if ($_SESSION['class_nivel'] == 1) {
         });
     </script>
 </body>
+
 </html>

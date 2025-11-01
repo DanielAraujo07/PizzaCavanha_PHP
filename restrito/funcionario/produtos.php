@@ -257,7 +257,7 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
 
                             <div class="form-group">
                                 <label for="imagem">URL da Imagem</label>
-                                <input type="url" class="form-control" id="imagem" name="imagem" placeholder="https://exemplo.com/imagem.jpg">
+                                <input type="text" class="form-control" id="imagem" name="imagem" placeholder="https://exemplo.com/imagem.jpg">
                             </div>
 
                             <div class="form-group">

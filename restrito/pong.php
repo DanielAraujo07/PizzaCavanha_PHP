@@ -62,15 +62,16 @@ endif;
 
         /* Header */
         header {
-            background-color: var(--light-color);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            background-color: #1b1b1be0;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 2px 10px #0000004d;
             position: sticky;
             top: 0;
             z-index: 100;
             border-bottom: 1px solid var(--primary-color);
         }
 
-                header a {
+        header a {
             text-decoration: none;
         }
 
