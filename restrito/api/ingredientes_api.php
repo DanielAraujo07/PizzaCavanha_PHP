@@ -13,8 +13,26 @@ try {
         throw new Exception("Não foi possível conectar ao banco de dados");
     }
 
+    // Receber o tipo de ingrediente via GET (opcional)
+    $tipo_id = isset($_GET['tipo']) ? intval($_GET['tipo']) : null;
+
     $sql = "SELECT * FROM ingredientes WHERE disponivel = TRUE";
-    $result = mysqli_query($conn, $sql);
+    
+    // Adicionar filtro por tipo se especificado
+    if ($tipo_id !== null) {
+        $sql .= " AND tipo_id = ?";
+    }
+    
+    $sql .= " ORDER BY nome";
+
+    if ($tipo_id !== null) {
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param($stmt, "i", $tipo_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+    } else {
+        $result = mysqli_query($conn, $sql);
+    }
     
     if (!$result) {
         throw new Exception("Erro ao buscar ingredientes: " . mysqli_error($conn));
@@ -26,7 +44,8 @@ try {
             'id' => (int)$row['id'],
             'nome' => $row['nome'],
             'preco' => (float)$row['preco'],
-            'imagem' => $row['imagem']
+            'imagem' => $row['imagem'],
+            'tipo_id' => (int)$row['tipo_id']
         ];
     }
 

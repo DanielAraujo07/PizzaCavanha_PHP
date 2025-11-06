@@ -13,8 +13,18 @@ try {
         throw new Exception("Não foi possível conectar ao banco de dados");
     }
 
-    $sql = "SELECT * FROM tamanhos";
-    $result = mysqli_query($conn, $sql);
+    // Receber o tipo de produto via GET (default: 1 = Pizzas)
+    $tipo_id = isset($_GET['tipo_id']) ? intval($_GET['tipo_id']) : 1;
+
+    $sql = "SELECT t.*, tp.nome as tipo_nome 
+            FROM tamanhos t 
+            LEFT JOIN tipos_produtos tp ON t.tipo_id = tp.id 
+            WHERE t.tipo_id = ?";
+    
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $tipo_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
     
     if (!$result) {
         throw new Exception("Erro ao buscar tamanhos: " . mysqli_error($conn));
@@ -23,8 +33,11 @@ try {
     $tamanhos = [];
     while ($row = mysqli_fetch_assoc($result)) {
         $tamanhos[] = [
+            'id' => (int)$row['id'],
             'nome' => $row['nome'],
-            'preco_base' => (float)$row['preco_base']
+            'preco_base' => (float)$row['preco_base'],
+            'tipo_id' => (int)$row['tipo_id'],
+            'tipo_nome' => $row['tipo_nome']
         ];
     }
 

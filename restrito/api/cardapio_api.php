@@ -26,10 +26,11 @@ try {
         $categorias[$row['nome']] = [];
     }
 
-    // Buscar todos os produtos
-    $sql_produtos = "SELECT p.*, c.nome as categoria_nome 
+    // Buscar todos os produtos (COM NOVO JOIN para tipos_produtos)
+    $sql_produtos = "SELECT p.*, c.nome as categoria_nome, tp.nome as tipo_nome 
                      FROM produtos p 
                      LEFT JOIN categorias c ON p.id_categoria = c.id 
+                     LEFT JOIN tipos_produtos tp ON p.tipo_id = tp.id 
                      WHERE p.disponivel = TRUE";
     $result_produtos = mysqli_query($conn, $sql_produtos);
     
@@ -44,7 +45,9 @@ try {
             'nome' => $row['nome'],
             'descricao' => $row['descricao'],
             'preco' => (float)$row['preco'],
-            'imagem' => $row['imagem']
+            'imagem' => $row['imagem'],
+            'tipo_id' => (int)$row['tipo_id'],
+            'tipo_nome' => $row['tipo_nome']
         ];
 
         $categorias[$categoria][] = $produto;

@@ -156,15 +156,16 @@ CREATE TABLE tamanhos (
     INSERT INTO produtos (nome, descricao, preco, imagem, id_categoria, tipo_id) VALUES
         -- Pizzas Personalizadas
 		('Pizza Personalizada Salgada', 'Monte a sua própria pizza, do zero. Uma pizza com a sua cara!', '20.00', 'https://images.pexels.com/photos/1093015/pexels-photo-1093015.jpeg', 1, 1),
+        ('Pizza Personalizada Doce', 'Monte a sua pizza doce, do zero. Sempre sobra espaço pra um docinho né?', '30.00', 'https://cdn.pixabay.com/photo/2020/01/04/18/10/pizza-4741311_960_720.jpg', 2, 2),
         -- Pizzas Padrão
 		('Margherita', 'Molho de Tomate, Mussarela e Manjericão', 35.00, 'https://grandecheese.com/wp-content/uploads/2025/02/Margherita-Pizza-deck-oven.jpg.webp', 1, 1),
 		('Pepperoni', 'Molho de Tomate, Mussarela e Pepperoni', 40.00, 'https://www.seara.com.br/wp-content/uploads/2025/09/pizza-de-pepperoni-caseira-portal-minha-receita.jpg', 1, 1),
 		('Calabresa', 'Molho de Tomate, Mussarela, Calabresa e Cebola', 38.00, 'https://www.sabornamesa.com.br/media/k2/items/cache/513d7a0ab11e38f7bd117d760146fed3_XL.jpg', 1, 1),
-		('Frango com Catupiry', 'Molho de Tomate, Frango Desfiado e Catupiry', 45.00, 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=1381&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 1, 1),
+		('Frango com Catupiry', 'Molho de Tomate, Frango Desfiado e Catupiry', 45.00, 'https://guiadacozinha.com.br/wp-content/uploads/2007/01/pizza-de-frango-e-milho.jpg', 1, 1),
 		('Portuguesa', 'Molho de Tomate, Presunto, Ovos, Cebola, Azeitonas e Mussarela', 42.00, 'https://www.ogastronomo.com.br/upload/389528334-curiosidades-sobre-a-pizza-portuguesa.jpg', 1, 1),
         -- Pizzas Doces
-		('Chocolate com Morango', 'Chocolate ao Leite e Morangos Frescos', 48.00, 'https://images.unsplash.com/photo-1650173600578-778a606f7c2c?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 2, 1),
-		('Banana com Canela', 'Banana, Canela e Leite Condensado', 40.00, 'https://s2-receitas.glbimg.com/gwhIG-mUpHKhYSg8Zl21Zj_OXjA=/0x0:1280x800/984x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_1f540e0b94d8437dbbc39d567a1dee68/internal_photos/bs/2022/M/q/GHOy3ZT9GjPxMJH7FYmw/pizza-doce-banana-receita.jpg', 2, 1),
+		('Chocolate com Morango', 'Chocolate ao Leite e Morangos Frescos', 48.00, 'https://s2.glbimg.com/qyb1vGS-RoeaveKby5OXxsAkns4=/620x455/e.glbimg.com/og/ed/f/original/2021/04/15/receita-pizza-doce-chocolate-morango.jpg', 2, 1),
+		('Banana com Canela', 'Banana, Canela e Leite Condensado', 40.00, 'https://lupertine.com.br/wp-content/uploads/2022/07/BANANA-1.jpg', 2, 1),
         -- Pizzas Vegetarianas
 		('Vegetariana', 'Molho de Tomate, Mussarela e Legumes Frescos', 38.00, 'https://www.maestrella.com/wp-content/uploads/2021/09/AUTUMN-VEGGIE-PIZZA-min.jpg', 3, 1),
 		('Rúcula com Tomate', 'Mussarela de Búfala, Rúcula e Tomate Seco', 45.00, 'https://images.unsplash.com/photo-1641840360785-c720744aa905?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 3, 1),

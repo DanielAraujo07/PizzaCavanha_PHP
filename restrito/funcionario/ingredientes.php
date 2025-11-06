@@ -17,13 +17,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nome = mysqli_real_escape_string($conn, $_POST['nome']);
         $preco = floatval($_POST['preco']);
         $imagem = mysqli_real_escape_string($conn, $_POST['imagem']);
-        $id_tipo = intval($_POST['id_tipo']);
+        $tipo_id = intval($_POST['tipo_id']);
         $disponivel = isset($_POST['disponivel']) ? 1 : 0;
 
-        $sql = "INSERT INTO ingredientes (nome, preco, imagem, id_tipo, disponivel) 
+        $sql = "INSERT INTO ingredientes (nome, preco, imagem, tipo_id, disponivel) 
                 VALUES (?, ?, ?, ?, ?)";
         $stmt = mysqli_prepare($conn, $sql);
-        mysqli_stmt_bind_param($stmt, "sdsii", $nome, $preco, $imagem, $id_tipo, $disponivel);
+        mysqli_stmt_bind_param($stmt, "sdsii", $nome, $preco, $imagem, $tipo_id, $disponivel);
         
         if (mysqli_stmt_execute($stmt)) {
             $mensagem = "Ingrediente adicionado com sucesso!";
@@ -40,12 +40,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nome = mysqli_real_escape_string($conn, $_POST['nome']);
         $preco = floatval($_POST['preco']);
         $imagem = mysqli_real_escape_string($conn, $_POST['imagem']);
-        $id_tipo = intval($_POST['id_tipo']);
+        $tipo_id = intval($_POST['tipo_id']);
         $disponivel = isset($_POST['disponivel']) ? 1 : 0;
 
-        $sql = "UPDATE ingredientes SET nome=?, preco=?, imagem=?, id_tipo=?, disponivel=? WHERE id=?";
+        $sql = "UPDATE ingredientes SET nome=?, preco=?, imagem=?, tipo_id=?, disponivel=? WHERE id=?";
         $stmt = mysqli_prepare($conn, $sql);
-        mysqli_stmt_bind_param($stmt, "sdsiii", $nome, $preco, $imagem, $id_tipo, $disponivel, $id);
+        mysqli_stmt_bind_param($stmt, "sdsiii", $nome, $preco, $imagem, $tipo_id, $disponivel, $id);
         
         if (mysqli_stmt_execute($stmt)) {
             $mensagem = "Ingrediente atualizado com sucesso!";
@@ -80,7 +80,7 @@ $filtro_tipo = isset($_GET['tipo']) ? intval($_GET['tipo']) : '';
 
 $sql_ingredientes = "SELECT i.*, t.nome as tipo_nome 
                      FROM ingredientes i 
-                     LEFT JOIN tipos_categoria t ON i.id_tipo = t.id 
+                     LEFT JOIN tipos_categoria t ON i.tipo_id = t.id 
                      WHERE 1=1";
 
 if (!empty($busca)) {
@@ -88,7 +88,7 @@ if (!empty($busca)) {
 }
 
 if (!empty($filtro_tipo)) {
-    $sql_ingredientes .= " AND i.id_tipo = $filtro_tipo";
+    $sql_ingredientes .= " AND i.tipo_id = $filtro_tipo";
 }
 
 $sql_ingredientes .= " ORDER BY i.nome";
@@ -253,8 +253,8 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
                             </div>
 
                             <div class="form-group">
-                                <label for="id_tipo">Tipo de Ingrediente</label>
-                                <select class="form-control" id="id_tipo" name="id_tipo" required>
+                                <label for="tipo_id">Tipo de Ingrediente</label>
+                                <select class="form-control" id="tipo_id" name="tipo_id" required>
                                     <option value="">Selecione um tipo</option>
                                     <?php foreach ($tipos as $tipo): ?>
                                         <option value="<?php echo $tipo['id']; ?>">
@@ -462,7 +462,7 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
                 document.getElementById('nome').value = ingrediente.nome;
                 document.getElementById('preco').value = ingrediente.preco;
                 document.getElementById('imagem').value = ingrediente.imagem || '';
-                document.getElementById('id_tipo').value = ingrediente.id_tipo;
+                document.getElementById('tipo_id').value = ingrediente.tipo_id;
                 document.getElementById('disponivel').checked = ingrediente.disponivel == 1;
                 
                 // Mudar formulário para modo edição

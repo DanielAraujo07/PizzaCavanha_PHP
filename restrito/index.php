@@ -64,6 +64,7 @@ include "verifica_login.php";
             z-index: 100;
             border-bottom: 1px solid var(--primary-color);
         }
+
         header a {
             text-decoration: none;
         }
@@ -3516,44 +3517,56 @@ include "verifica_login.php";
 
         // Página "Monte sua Pizza"
         async function initPizzaBuilder() {
-            // Carregar ingredientes do banco de dados
-            ingredientes = await carregarDadosAPI('api/ingredientes_api.php');
-            // Carregar tamanhos do banco de dados
-            tamanhosPizza = await carregarDadosAPI('api/tamanhos_api.php');
+            // Carregar ingredientes do banco de dados (APENAS SALGADOS - tipo 1)
+            ingredientes = await carregarDadosAPI('api/ingredientes_api.php?tipo=1');
+
+            // Carregar tamanhos de PIZZAS (tipo_id = 1)
+            tamanhosPizza = await carregarDadosAPI('api/tamanhos_api.php?tipo_id=1');
 
             const ingredientesGrid = document.getElementById('ingredientes-grid');
-            ingredientes.forEach(ing => {
-                const btn = document.createElement('button');
-                btn.className = 'ingrediente-btn';
-                btn.innerHTML = `
-            <img src="${ing.imagem}" alt="${ing.nome}" onerror="this.src='assets/placeholder-ingrediente.png'">
-            <span>${ing.nome}</span>
-        `;
-                btn.addEventListener('click', () => adicionarIngrediente(ing));
-                ingredientesGrid.appendChild(btn);
-            });
+            ingredientesGrid.innerHTML = ''; // Limpar grid
+
+            if (ingredientes && ingredientes.length > 0) {
+                ingredientes.forEach(ing => {
+                    const btn = document.createElement('button');
+                    btn.className = 'ingrediente-btn';
+                    btn.innerHTML = `
+                <img src="${ing.imagem}" alt="${ing.nome}" onerror="this.src='assets/placeholder-ingrediente.png'">
+                <span>${ing.nome}</span>
+            `;
+                    btn.addEventListener('click', () => adicionarIngrediente(ing));
+                    ingredientesGrid.appendChild(btn);
+                });
+            } else {
+                ingredientesGrid.innerHTML = '<p class="sem-itens">Nenhum ingrediente disponível</p>';
+            }
 
             // Configurar os radio buttons de tamanho
             const tamanhoContainer = document.querySelector('.tamanho-options');
             tamanhoContainer.innerHTML = ''; // Limpar opções existentes
 
-            tamanhosPizza.forEach(tamanho => {
-                const label = document.createElement('label');
-                label.innerHTML = `
-            <input type="radio" name="tamanho" value="${tamanho.nome}" ${tamanho.nome === 'media' ? 'checked' : ''}>
-            ${tamanho.nome.charAt(0).toUpperCase() + tamanho.nome.slice(1)}
-        `;
-                tamanhoContainer.appendChild(label);
-            });
+            if (tamanhosPizza && tamanhosPizza.length > 0) {
+                tamanhosPizza.forEach(tamanho => {
+                    const label = document.createElement('label');
+                    label.innerHTML = `
+                <input type="radio" name="tamanho" value="${tamanho.nome}" 
+                       data-preco="${tamanho.preco_base}" 
+                       ${tamanho.nome.toLowerCase() === 'média' ? 'checked' : ''}>
+                ${tamanho.nome} - R$ ${tamanho.preco_base.toFixed(2)}
+            `;
+                    tamanhoContainer.appendChild(label);
+                });
+            } else {
+                tamanhoContainer.innerHTML = '<p>Nenhum tamanho disponível</p>';
+            }
 
-            // Canvas da pizza
+            // Resto do código do canvas e funcionalidades permanece igual...
             const canvas = document.getElementById('pizza-canvas');
             const ctx = canvas.getContext('2d');
 
             // Imagem da pizza base
             const pizzaBaseImg = new Image();
             pizzaBaseImg.src = './assets/pizzaBase.svg';
-
 
             // Array para armazenar os ingredientes desenhados
             let ingredientesDesenhados = [];
@@ -3641,9 +3654,9 @@ include "verifica_login.php";
                 ingredientesSelecionados.forEach((ing, index) => {
                     const li = document.createElement('li');
                     li.innerHTML = `
-                        ${ing.nome} - R$${ing.preco.toFixed(2)}
-                        <button onclick="removerIngrediente(${index})">×</button>
-                    `;
+                ${ing.nome} - R$${ing.preco.toFixed(2)}
+                <button onclick="removerIngrediente(${index})">×</button>
+            `;
                     ingredientesList.appendChild(li);
                 });
 
@@ -3651,29 +3664,32 @@ include "verifica_login.php";
             }
 
             function calcularTotal() {
-                const tamanhoSelecionado = document.querySelector('input[name="tamanho"]:checked').value;
-                const tamanho = tamanhosPizza.find(t => t.nome === tamanhoSelecionado);
+                const tamanhoSelecionado = document.querySelector('input[name="tamanho"]:checked');
 
-                if (!tamanho) {
-                    console.error('Tamanho não encontrado');
+                if (!tamanhoSelecionado) {
+                    console.error('Nenhum tamanho selecionado');
                     return;
                 }
 
-                const precoBase = tamanho.preco_base;
+                const precoBase = parseFloat(tamanhoSelecionado.getAttribute('data-preco'));
                 const precoIngredientes = ingredientesSelecionados.reduce((total, ing) => total + ing.preco, 0);
                 const total = precoBase + precoIngredientes;
 
                 document.getElementById('total-pedido').textContent = total.toFixed(2);
             }
 
-            function limparPizza() {
-                ingredientesSelecionados.length = 0;
-                ingredientesDesenhados.length = 0;
-                document.querySelector('input[name="tamanho"][value="media"]').checked = true;
-                atualizarListaIngredientes();
-                redesenharPizza();
-                calcularTotal();
-            }
+function limparPizza() {
+    ingredientesSelecionados.length = 0;
+    ingredientesDesenhados.length = 0;
+    
+    // Resetar para tamanho médio
+    const radioMedio = document.querySelector('input[name="tamanho"][value="Média"]');
+    if (radioMedio) radioMedio.checked = true;
+    
+    atualizarListaIngredientes();
+    redesenharPizza();
+    calcularTotal();
+}
 
             btnFinalizar.addEventListener('click', function() {
                 if (ingredientesSelecionados.length === 0) {
@@ -3716,37 +3732,73 @@ include "verifica_login.php";
                 });
             }
 
-            function adicionarPizzaAoCarrinho(observacao = '') {
-                // Obter o tamanho selecionado
-                const tamanho = document.querySelector('input[name="tamanho"]:checked').value;
-                const tamanhoTexto = {
-                    pequena: 'Pizza Pequena',
-                    media: 'Pizza Média',
-                    grande: 'Pizza Grande'
-                } [tamanho];
+function adicionarPizzaAoCarrinho(observacao = '') {
+    console.log('🍕 Iniciando adição da pizza ao carrinho...');
+    
+    // Obter o tamanho selecionado
+    const tamanhoSelecionado = document.querySelector('input[name="tamanho"]:checked');
+    if (!tamanhoSelecionado) {
+        alert('Por favor, selecione um tamanho!');
+        return;
+    }
 
-                // Criar descrição dos ingredientes
-                const ingredientesDesc = ingredientesSelecionados.map(ing => ing.nome).join(', ');
+    const tamanhoTexto = {
+        'Pequena': 'Pizza Pequena Personalizada',
+        'Média': 'Pizza Média Personalizada', 
+        'Grande': 'Pizza Grande Personalizada'
+    }[tamanhoSelecionado.value] || 'Pizza Personalizada';
 
-                // 🔴 CORREÇÃO: Usar a função adicionarAoCarrinho em vez de manipular diretamente
-                const pizzaPersonalizada = {
-                    id: Date.now(),
-                    nome: tamanhoTexto,
-                    descricao: `${ingredientesDesc}`,
-                    preco: parseFloat(totalPedido.textContent),
-                    imagem: './assets/logo-square.svg',
-                    observacao: observacao,
-                    quantidade: 1,
-                    personalizada: true
-                };
+    // Criar descrição dos ingredientes
+    const ingredientesDesc = ingredientesSelecionados.map(ing => ing.nome).join(', ');
+    const precoTotal = parseFloat(document.getElementById('total-pedido').textContent);
 
-                // 🔴 CORREÇÃO: Usar a função unificada
-                adicionarAoCarrinho(pizzaPersonalizada, observacao, false);
+    // Criar objeto da pizza
+    const pizzaPersonalizada = {
+        id: `pizza_personalizada_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        nome: tamanhoTexto,
+        descricao: ingredientesDesc || 'Pizza personalizada',
+        preco: precoTotal,
+        imagem: './assets/pizzaBase.svg',
+        observacao: observacao,
+        quantidade: 1,
+        personalizada: true,
+        ingredientes: [...ingredientesSelecionados] // Manter cópia dos ingredientes
+    };
 
-                // Limpar a pizza para o próximo pedido
-                limparPizza();
-                showPage('carrinho');
-            }
+    console.log('✅ Pizza criada:', pizzaPersonalizada);
+
+    // Adicionar ao carrinho usando a função unificada
+    const sucesso = adicionarAoCarrinho(pizzaPersonalizada, observacao, false);
+    
+    if (sucesso) {
+        // Fechar overlay
+        const overlay = document.getElementById('confirmacao-overlay-observacao');
+        overlay.classList.remove('ativo');
+        
+        // Limpar a pizza para o próximo pedido
+        limparPizza();
+        
+        // Mostrar confirmação
+        mostrarConfirmacaoAdicao(pizzaPersonalizada.nome);
+        
+        // Ir para o carrinho
+        showPage('carrinho');
+    }
+}
+
+function mostrarConfirmacaoAdicao(nomeProduto) {
+    const overlay = document.getElementById('confirmacao-overlay-carrinho');
+    const textoConfirmacao = document.getElementById('confirmacao-texto-carrinho');
+    
+    textoConfirmacao.textContent = `${nomeProduto} foi adicionado ao carrinho!`;
+    overlay.classList.add('ativo');
+
+    // Configurar o botão de confirmação
+    const btnConfirmacao = document.getElementById('confirmacao-btn-carrinho');
+    btnConfirmacao.onclick = function() {
+        overlay.classList.remove('ativo');
+    };
+}
 
             window.removerIngrediente = removerIngrediente;
         }
