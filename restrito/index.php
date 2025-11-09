@@ -2101,6 +2101,47 @@ include "verifica_login.php";
         </div>
     </section>
 
+    <!-- Página Monte sua Pizza Doce -->
+    <section id="monte-sua-pizza-doce" class="page">
+        <div class="container">
+            <h1 class="titulo-pagina">Monte sua Pizza Doce</h1>
+
+            <div class="pizza-builder-container">
+                <div class="pizza-canvas-container">
+                    <canvas id="pizza-canvas-doce" width="488" height="488"></canvas>
+                </div>
+
+                <div class="ingredientes-panel">
+                    <div class="tamanho-pizza">
+                        <h3>Tamanho:</h3>
+                        <div class="tamanho-options" id="tamanho-options-doce">
+                            <!-- Os tamanhos serão carregados via JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="ingredientes-list">
+                        <h3>Ingredientes Doces:</h3>
+                        <div class="ingredientes-grid" id="ingredientes-grid-doce">
+                            <!-- Os ingredientes doces serão adicionados via Database -->
+                        </div>
+                    </div>
+
+                    <div class="ingredientes-selecionados">
+                        <h3>Sua Pizza Doce:</h3>
+                        <ul id="ingredientes-selecionados-list-doce">
+                            <!-- Os ingredientes selecionados serão adicionados aqui -->
+                        </ul>
+                    </div>
+
+                    <div class="total-pedido">
+                        <h3>Total: R$<span id="total-pedido-doce">30.00</span></h3>
+                        <button id="btn-finalizar-doce" class="btn" disabled>Adicionar ao Carrinho</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Página Cardápio -->
     <section id="cardapio" class="page">
         <div class="container">
@@ -2315,7 +2356,7 @@ include "verifica_login.php";
                 </div>
 
                 <div class="adicionais-botoes" style="display: flex; justify-content: center; align-items: center;">
-                    <button type="button" class="post-content-button" id="btn-continuar-observacao">Continuar</button>
+                    <button type="button" class="post-content-button" id="btn-continuar-observacao">CONTINUAR</button>
                 </div>
             </div>
         </div>
@@ -2392,6 +2433,8 @@ include "verifica_login.php";
 
             initCardapio();
             initPizzaBuilder();
+            initPizzaBuilderDoce();
+            configurarCheckout();
         });
         // Botão continuar comprando
         document.getElementById('continuar-comprando').addEventListener('click', function() {
@@ -2448,10 +2491,575 @@ include "verifica_login.php";
                 behavior: 'smooth'
             });
         }
-        // Variáveis globais
+        /*
+            ======================
+            VARIÁVEIS GLOBAIS AQUI
+            ======================
+        */
         let cardapio = {};
         let ingredientes = [];
         let tamanhosPizza = [];
+        let formasPagamento = [];
+        let enderecoEntrega = null;
+        let formaPagamentoSelecionada = null;
+        // Variáveis para controle do popup de adicionais
+        let itemAtual = null;
+        let adicionaisSelecionados = [];
+        let precoBaseItem = 0;
+        let tamanhoSelecionado = null;
+
+        /*
+            ====================
+            FUNÇÕES GLOBAIS AQUI
+            ====================
+        */
+
+        // Função para mostrar o popup de observação (após adicionais)
+        function mostrarOverlayObservacaoComAdicionais() {
+            console.log('📝 Indo para observação após adicionais');
+
+            const overlay = document.getElementById('confirmacao-overlay-observacao');
+            const textarea = overlay.querySelector('textarea');
+            const form = document.getElementById('form-observacao');
+
+            if (!overlay || !form) {
+                console.error('❌ Popup de observação não encontrado');
+                return;
+            }
+
+            textarea.value = '';
+            overlay.classList.add('ativo');
+
+            // Remover event listeners anteriores para evitar duplicação
+            form.onsubmit = null;
+
+            // Configurar o formulário
+            form.onsubmit = function(e) {
+                e.preventDefault();
+                console.log('✅ Formulário de observação submetido');
+
+                const observacao = textarea.value.trim();
+                console.log('💬 Observação:', observacao);
+                console.log('🍕 Item atual:', itemAtual);
+                console.log('➕ Adicionais selecionados:', adicionaisSelecionados);
+
+                // Criar item com adicionais
+                const itemComAdicionais = criarItemComAdicionais(itemAtual, adicionaisSelecionados, observacao);
+                console.log('🛒 Item final para carrinho:', itemComAdicionais);
+
+                // Adicionar ao carrinho
+                if (typeof adicionarAoCarrinho === 'function') {
+                    adicionarAoCarrinho(itemComAdicionais, observacao, true);
+                    console.log('✅ Item adicionado ao carrinho com sucesso!');
+                } else {
+                    console.error('❌ Função adicionarAoCarrinho não encontrada!');
+                    // Fallback
+                    alert('Erro ao adicionar ao carrinho. Função não encontrada.');
+                }
+
+                // Fechar overlay
+                overlay.classList.remove('ativo');
+
+                // Limpar variáveis temporárias
+                adicionaisSelecionados = [];
+                itemAtual = null;
+            };
+
+            // Botão Voltar do popup de observação
+            const btnVoltarObservacao = document.getElementById('btn-voltar-observacao');
+            if (btnVoltarObservacao) {
+                btnVoltarObservacao.onclick = function() {
+                    console.log('↩️ Voltando para adicionais');
+                    overlay.classList.remove('ativo');
+                    mostrarPopupAdicionais(itemAtual); // Voltar para adicionais
+                };
+            }
+        }
+
+        // Função para criar o item com adicionais
+        function criarItemComAdicionais(item, adicionais, observacao) {
+            console.log('🔨 Criando item com tamanho e adicionais...');
+
+            const precoTamanho = tamanhoSelecionado ? tamanhoSelecionado.preco_base : 0;
+            const totalAdicionais = adicionais.reduce((sum, adicional) => sum + adicional.preco, 0);
+
+            // Construir nome com tamanho
+            const nomeComTamanho = tamanhoSelecionado ?
+                `${item.nome} - ${tamanhoSelecionado.nome.charAt(0).toUpperCase() + tamanhoSelecionado.nome.slice(1)}` :
+                item.nome;
+
+            // Construir descrição
+            let descricao = item.descricao;
+            if (tamanhoSelecionado) {
+                descricao += '';
+            }
+            if (adicionais.length > 0) {
+                const nomesAdicionais = adicionais.map(a => a.nome).join(', ');
+                descricao += '';
+            }
+
+            // Criar ID único
+            const tamanhoId = tamanhoSelecionado ? tamanhoSelecionado.nome : 'padrao';
+            const adicionaisIds = adicionais.map(a => a.id).sort().join('_');
+            const uniqueId = `${item.id}_${tamanhoId}_${adicionaisIds}_${Date.now()}`;
+
+            const itemFinal = {
+                id: uniqueId,
+                nome: nomeComTamanho,
+                descricao: descricao,
+                preco: item.preco + precoTamanho + totalAdicionais,
+                imagem: item.imagem,
+                observacao: observacao,
+                adicionais: [...adicionais],
+                tamanho: tamanhoSelecionado ? {
+                    ...tamanhoSelecionado
+                } : null,
+                quantidade: 1
+            };
+
+            console.log('✅ Item criado com tamanho:', itemFinal);
+            return itemFinal;
+        }
+
+
+        // Função para atualizar total com adicionais
+        function atualizarTotalAdicionais() {
+            // ✅ CORREÇÃO: Verificação mais robusta
+            if (!itemAtual || typeof itemAtual.preco === 'undefined') {
+                console.error('❌ itemAtual não definido ou sem preço:', itemAtual);
+
+                // Tentar recuperar do contexto atual
+                const resumoPreco = document.getElementById('resumo-item-preco');
+                if (resumoPreco) {
+                    const precoTexto = resumoPreco.textContent.replace('R$ ', '').trim();
+                    const precoBase = parseFloat(precoTexto) || 0;
+
+                    const precoTamanho = tamanhoSelecionado ? tamanhoSelecionado.preco_base : 0;
+                    const totalAdicionais = adicionaisSelecionados.reduce((sum, adicional) => sum + adicional.preco, 0);
+                    const totalFinal = precoBase + precoTamanho + totalAdicionais;
+
+                    const totalElement = document.getElementById('total-com-adicionais');
+                    if (totalElement) {
+                        totalElement.textContent = totalFinal.toFixed(2);
+                    }
+                }
+                return;
+            }
+
+            const precoTamanho = tamanhoSelecionado ? tamanhoSelecionado.preco_base : 0;
+            const totalAdicionais = adicionaisSelecionados.reduce((sum, adicional) => sum + adicional.preco, 0);
+            const totalFinal = itemAtual.preco + precoTamanho + totalAdicionais;
+
+            console.log('💰 Calculando total:', {
+                precoBase: itemAtual.preco,
+                precoTamanho: precoTamanho,
+                totalAdicionais: totalAdicionais,
+                totalFinal: totalFinal
+            });
+
+            const totalElement = document.getElementById('total-com-adicionais');
+            if (totalElement) {
+                totalElement.textContent = totalFinal.toFixed(2);
+            }
+
+            // Habilitar/desabilitar botão Continuar
+            const btnContinuar = document.getElementById('btn-continuar-observacao');
+            if (btnContinuar) {
+                btnContinuar.disabled = totalFinal <= 0;
+            }
+        }
+
+        function atualizarListaAdicionaisSelecionados() {
+            const container = document.getElementById('adicionais-selecionados');
+            container.innerHTML = '';
+
+            adicionaisSelecionados.forEach(adicional => {
+                const elemento = document.createElement('div');
+                elemento.className = 'adicional-selecionado';
+                elemento.innerHTML = `
+            <span>${adicional.nome}</span>
+            <span>
+                + R$ ${adicional.preco.toFixed(2)}
+                <span class="remover" data-id="${adicional.id}">×</span>
+            </span>
+        `;
+                container.appendChild(elemento);
+            });
+
+            // Event listeners para remover adicionais
+            container.querySelectorAll('.remover').forEach(remover => {
+                remover.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const adicionalId = this.dataset.id;
+                    removerAdicional(adicionalId);
+
+                    // Desmarcar o checkbox correspondente
+                    const checkbox = document.querySelector(`.adicional-checkbox[data-id="${adicionalId}"]`);
+                    if (checkbox) {
+                        checkbox.checked = false;
+                        checkbox.closest('.adicional-item').classList.remove('selecionado');
+                    }
+
+                    atualizarTotalAdicionais();
+                });
+            });
+        }
+
+        function adicionarAdicional(adicional) {
+            if (!adicionaisSelecionados.find(a => a.id === adicional.id)) {
+                adicionaisSelecionados.push(adicional);
+                atualizarListaAdicionaisSelecionados();
+            }
+        }
+
+        function removerAdicional(adicionalId) {
+            adicionaisSelecionados = adicionaisSelecionados.filter(a => a.id != adicionalId);
+            atualizarListaAdicionaisSelecionados();
+        }
+
+        function atualizarResumoTamanho() {
+            const container = document.getElementById('tamanho-selecionado');
+
+            if (tamanhoSelecionado) {
+                container.innerHTML = `
+            <p>${tamanhoSelecionado.nome.charAt(0).toUpperCase() + tamanhoSelecionado.nome.slice(1)}</p>
+            <p>+ R$ ${tamanhoSelecionado.preco_base.toFixed(2)}</p>
+        `;
+            } else {
+                container.innerHTML = '';
+            }
+        }
+
+        // Função para configurar os event listeners do popup de adicionais
+        function configurarEventListenersAdicionais() {
+            console.log('🔗 Configurando event listeners...');
+
+            // Event Listeners para Tamanho
+            document.querySelectorAll('.tamanho-option').forEach(option => {
+                option.addEventListener('click', function(e) {
+                    if (!e.target.classList.contains('tamanho-checkbox')) {
+                        const radio = this.querySelector('.tamanho-checkbox');
+
+                        // Marcar este radio e desmarcar outros
+                        document.querySelectorAll('.tamanho-checkbox').forEach(r => {
+                            r.checked = false;
+                            r.closest('.tamanho-option').classList.remove('selecionado');
+                        });
+
+                        radio.checked = true;
+                        this.classList.add('selecionado');
+
+                        // Atualizar tamanho selecionado
+                        tamanhoSelecionado = {
+                            nome: radio.dataset.nome,
+                            preco_base: parseFloat(radio.dataset.preco)
+                        };
+
+                        atualizarTotalAdicionais();
+                        atualizarResumoTamanho();
+                    }
+                });
+            });
+
+            // Event Listeners para Adicionais
+            document.querySelectorAll('.adicional-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (!e.target.classList.contains('adicional-checkbox')) {
+                        const checkbox = this.querySelector('.adicional-checkbox');
+                        const estavaSelecionado = checkbox.checked;
+
+                        checkbox.checked = !estavaSelecionado;
+
+                        if (checkbox.checked) {
+                            this.classList.add('selecionado');
+                            adicionarAdicional({
+                                id: checkbox.dataset.id,
+                                nome: checkbox.dataset.nome,
+                                preco: parseFloat(checkbox.dataset.preco)
+                            });
+                        } else {
+                            this.classList.remove('selecionado');
+                            removerAdicional(checkbox.dataset.id);
+                        }
+
+                        atualizarTotalAdicionais();
+                    }
+                });
+            });
+
+            // Botões de navegação
+            const btnVoltar = document.getElementById('btn-voltar-adicionais');
+            if (btnVoltar) {
+                btnVoltar.onclick = function() {
+                    console.log('❌ Cancelando personalização');
+                    document.getElementById('confirmacao-overlay-adicionais').classList.remove('ativo');
+                    adicionaisSelecionados = [];
+                    itemAtual = null;
+                    tamanhoSelecionado = null;
+                };
+            }
+
+            const btnContinuar = document.getElementById('btn-continuar-observacao');
+            if (btnContinuar) {
+                btnContinuar.onclick = function() {
+                    console.log('➡️ Continuando para observação');
+                    document.getElementById('confirmacao-overlay-adicionais').classList.remove('ativo');
+                    mostrarOverlayObservacaoComAdicionais();
+                };
+            }
+        }
+
+        // Função para carregar tamanhos dinamicamente
+        async function carregarTamanhosDinamicos(container, tipoTamanhos, item) {
+            console.log('📏 Buscando tamanhos para tipo:', tipoTamanhos);
+
+            const tamanhos = await carregarDadosAPI(`api/tamanhos_api.php?tipo_id=${tipoTamanhos}`);
+
+            container.innerHTML = '';
+
+            if (!tamanhos || tamanhos.length === 0) {
+                console.log('❌ Nenhum tamanho encontrado para tipo:', tipoTamanhos);
+                container.innerHTML = '<div class="sem-tamanhos">Nenhum tamanho disponível</div>';
+
+                // Se não há tamanhos, definir preço base como 0
+                tamanhoSelecionado = {
+                    nome: 'Único',
+                    preco_base: 0
+                };
+                return;
+            }
+
+            console.log('✅ Tamanhos carregados:', tamanhos);
+
+            tamanhos.forEach((tamanho, index) => {
+                const tamanhoElement = document.createElement('div');
+                tamanhoElement.className = 'tamanho-option';
+                tamanhoElement.innerHTML = `
+            <div class="nome-preco">
+                <div class="nome">${tamanho.nome}</div>
+                <div class="preco">${tamanho.preco_base > 0 ? `(R$ ${tamanho.preco_base.toFixed(2)})` : '(Incluído)'}</div>
+            </div>
+            <hr>
+            <div class="descricao">${obterDescricaoTamanho(tamanho.nome, tipoTamanhos)}</div>
+            <input type="radio" name="tamanho-pizza" class="tamanho-checkbox" 
+                   data-nome="${tamanho.nome}" data-preco="${tamanho.preco_base}"
+                   ${index === 0 ? 'checked' : ''}>
+        `;
+                container.appendChild(tamanhoElement);
+            });
+
+            // Selecionar primeiro tamanho por padrão
+            const primeiroTamanho = container.querySelector('.tamanho-option');
+            if (primeiroTamanho) {
+                const radio = primeiroTamanho.querySelector('.tamanho-checkbox');
+                radio.checked = true;
+                primeiroTamanho.classList.add('selecionado');
+                tamanhoSelecionado = {
+                    nome: radio.dataset.nome,
+                    preco_base: parseFloat(radio.dataset.preco)
+                };
+                console.log('✅ Tamanho selecionado:', tamanhoSelecionado);
+            }
+        }
+
+        // Função para carregar adicionais dinamicamente
+        async function carregarAdicionaisDinamicos(container, tipoIngredientes) {
+            console.log('🍕 Buscando adicionais tipo:', tipoIngredientes);
+
+            const adicionais = await carregarDadosAPI(`api/ingredientes_api.php?tipo=${tipoIngredientes}`);
+
+            container.innerHTML = '';
+
+            if (!adicionais || adicionais.length === 0) {
+                console.log('❌ Nenhum adicional encontrado para tipo:', tipoIngredientes);
+                container.innerHTML = '<div class="sem-adicionais">Nenhum adicional disponível no momento.</div>';
+                return;
+            }
+
+            console.log('✅ Adicionais carregados:', adicionais.length, 'itens');
+
+            adicionais.forEach(adicional => {
+                const adicionalElement = document.createElement('div');
+                adicionalElement.className = 'adicional-item';
+                adicionalElement.innerHTML = `
+            <div class="nome-preco">
+                <div class="nome">${adicional.nome}</div>
+                <div class="preco">+ R$ ${adicional.preco.toFixed(2)}</div>
+            </div>
+            <input type="checkbox" class="adicional-checkbox" 
+                   data-id="${adicional.id}" data-nome="${adicional.nome}" data-preco="${adicional.preco}">
+        `;
+                container.appendChild(adicionalElement);
+            });
+        }
+
+        // Função auxiliar para descrições de tamanho
+        function obterDescricaoTamanho(nomeTamanho, tipoTamanhos) {
+            const descricoes = {
+                1: { // Pizzas
+                    'Pequena': '4 fatias - 25cm',
+                    'Média': '6 fatias - 30cm',
+                    'Grande': '8 fatias - 35cm',
+                    'pequena': '4 fatias - 25cm',
+                    'media': '6 fatias - 30cm',
+                    'grande': '8 fatias - 35cm'
+                },
+                2: { // Bebidas
+                    '350ml': 'Lata/garrafa pequena',
+                    '500ml': 'Garrafa média',
+                    'Garrafa / Jarra': '1 litro'
+                },
+                3: { // Sobremesas
+                    'Média': 'Porção individual',
+                    'Grande': 'Para compartilhar'
+                },
+                4: { // Vinhos
+                    'Garrafa': '1 Litro'
+                }
+            };
+
+            return descricoes[tipoTamanhos]?.[nomeTamanho] || '';
+        }
+
+        async function mostrarPopupAdicionais(item, tipoIngredientes = 1, tipoTamanhosEspecifico = null) {
+            console.log('🎯 Iniciando popup para:', item.nome,
+                'Ingredientes Tipo:', tipoIngredientes,
+                'Tamanhos Tipo:', tipoTamanhosEspecifico);
+
+            itemAtual = item;
+            adicionaisSelecionados = [];
+            precoBaseItem = item.preco;
+            tamanhoSelecionado = null;
+
+            const overlay = document.getElementById('confirmacao-overlay-adicionais');
+            const containerAdicionais = document.getElementById('adicionais-container');
+            const containerTamanho = document.getElementById('tamanho-options-popup');
+            const resumoNome = document.getElementById('resumo-item-nome');
+            const resumoPreco = document.getElementById('resumo-item-preco');
+
+            // Atualizar resumo do item principal
+            resumoNome.textContent = item.nome;
+            resumoPreco.textContent = `R$ ${item.preco.toFixed(2)}`;
+
+            // Determinar tipo_id para tamanhos
+            let tipoTamanhos = tipoTamanhosEspecifico || 1; // Default para pizzas
+
+            if (!tipoTamanhosEspecifico) {
+                // Se não especificado, determinar automaticamente
+                if (item.tipo_id === 2) tipoTamanhos = 2; // Bebidas
+                else if (item.tipo_id === 3) tipoTamanhos = 3; // Sobremesas
+                else if (item.tipo_id === 4) tipoTamanhos = 4; // Vinhos
+            }
+
+            console.log('📏 Carregando tamanhos tipo:', tipoTamanhos);
+
+            // Carregar tamanhos específicos
+            await carregarTamanhosDinamicos(containerTamanho, tipoTamanhos, item);
+
+            // ✅ CORREÇÃO: SEMPRE carregar adicionais para pizzas (tipo_id 1)
+            // E para outros produtos que devem ter adicionais
+            if (item.tipo_id === 1 || tipoIngredientes !== 1) { // Pizzas ou quando especificado
+                console.log('🍕 Carregando ingredientes tipo:', tipoIngredientes);
+                await carregarAdicionaisDinamicos(containerAdicionais, tipoIngredientes);
+            } else {
+                console.log('🚫 Sem adicionais para este produto');
+                containerAdicionais.innerHTML = '<div class="sem-adicionais">Este produto não possui adicionais</div>';
+            }
+
+            // Atualizar total
+            atualizarTotalAdicionais();
+
+            // Configurar event listeners
+            configurarEventListenersAdicionais();
+
+            // Mostrar overlay
+            overlay.classList.add('ativo');
+            console.log('✅ Popup aberto com sucesso');
+        }
+
+
+        function mostrarOverlayObservacao(item) {
+            console.log('🎯 Verificando tipo do item:', item.nome, item.id, 'Tipo:', item.tipo_id, 'Categoria:', item.id_categoria);
+
+            // 🔴 PIZZA PERSONALIZADA SALGADA (ID 1)
+            if (item.id === 1 || item.nome.toLowerCase().includes('personalizada salgada')) {
+                console.log('Item é Pizza Personalizada Salgada, redirecionando ao monte sua pizza');
+                showPage('monte-sua-pizza');
+                return;
+            }
+
+            // 🍰 PIZZA PERSONALIZADA DOCE (ID 2)
+            if (item.id === 2 || item.nome.toLowerCase().includes('personalizada doce')) {
+                console.log('🍰 Item é Pizza Personalizada Doce, redirecionando para página de montar pizza doce');
+                showPage('monte-sua-pizza-doce');
+                return;
+            }
+
+            // 🍕 PIZZAS PRONTAS (tipo_id 1 = Pizzas)
+            if (item.tipo_id === 1) {
+                console.log('🍕 Item é uma pizza (tipo_id 1)');
+
+                // PIZZAS SALGADAS PRONTAS (categorias 1 ou 3)
+                if (item.id_categoria === 1 || item.id_categoria === 3) {
+
+                    console.log('🍕 Pizza salgada pronta - mostrando adicionais salgados');
+                    mostrarPopupAdicionais(item, 1); // tipoIngredientes 1 para salgados
+                    return;
+                }
+
+                // PIZZAS DOCES PRONTAS (categoria 2)
+                if (item.id_categoria === 2) {
+                    console.log('🍰 Pizza doce pronta - mostrando adicionais doces');
+                    mostrarPopupAdicionais(item, 2); // tipoIngredientes 2 para doces
+                    return;
+                }
+            }
+
+            // 🍹 BEBIDAS (tipo_id 2) - APENAS TAMANHOS
+            if (item.tipo_id === 2) {
+                console.log('🍹 Bebida - mostrando apenas tamanhos de bebidas');
+                mostrarPopupAdicionais(item, 3, 2); // tipoIngredientes 3 (adicionais de bebidas), tipoTamanhos 2 (bebidas)
+                return;
+            }
+
+            // 🍰 SOBREMESAS (tipo_id 3) - COM ADICIONAIS DOCES
+            if (item.tipo_id === 3) {
+                console.log('🍰 Sobremesa - mostrando adicionais doces (tipo 2)');
+                mostrarPopupAdicionais(item, 2, 3); // tipoIngredientes 2 (adicionais doces), tipoTamanhos 3 (sobremesas)
+                return;
+            }
+
+            // 🍷 VINHOS (tipo_id 4) - SEM ADICIONAIS, APENAS TAMANHOS
+            if (item.tipo_id === 4) {
+                console.log('🍷 Vinho - mostrando apenas tamanhos de vinhos');
+                mostrarPopupAdicionais(item, 1, 4); // tipoIngredientes 1 (sem adicionais), tipoTamanhos 4 (vinhos)
+                return;
+            }
+
+            // 📝 PARA TODOS OS OUTROS PRODUTOS (ir direto para observação)
+            console.log('📝 Produto sem personalização - indo direto para observação');
+            const overlay = document.getElementById('confirmacao-overlay-observacao');
+            const textarea = overlay.querySelector('textarea');
+            const form = overlay.querySelector('#form-observacao');
+
+            textarea.value = '';
+            overlay.classList.add('ativo');
+
+            // Remover event listeners anteriores
+            form.onsubmit = null;
+
+            form.onsubmit = function(e) {
+                e.preventDefault();
+                const observacao = textarea.value.trim();
+                console.log('✅ Adicionando produto simples ao carrinho:', item.nome);
+                adicionarAoCarrinho(item, observacao, false);
+                overlay.classList.remove('ativo');
+            };
+
+            document.getElementById('btn-voltar-observacao').onclick = function() {
+                overlay.classList.remove('ativo');
+            };
+        }
 
         // Função para carregar dados da API
         async function carregarDadosAPI(url) {
@@ -2464,11 +3072,6 @@ include "verifica_login.php";
                 return null;
             }
         }
-
-        // Variáveis globais para o checkout
-        let formasPagamento = [];
-        let enderecoEntrega = null;
-        let formaPagamentoSelecionada = null;
 
         // Função para carregar formas de pagamento
         async function carregarFormasPagamento() {
@@ -2768,7 +3371,7 @@ include "verifica_login.php";
                         const menuItem = document.createElement('div');
                         menuItem.className = 'menu-item';
                         menuItem.innerHTML = `
-                    <img src="${item.imagem}" alt="${item.nome}" onerror="this.src='assets/placeholder-pizza.jpg'">
+                    <img src="${item.imagem}" alt="${item.nome}" onerror="this.src='assets/placeholder.svg'">
                     <div class="menu-item-info">
                         <div class="nome-desc">
                             <h3>${item.nome}</h3>
@@ -2791,53 +3394,6 @@ include "verifica_login.php";
                 } else {
                     menuItems.innerHTML = '<div class="sem-itens"><p>Nenhum item disponível nesta categoria</p></div>';
                 }
-            }
-            // Variáveis globais para controlar o fluxo
-            let itemAtual = null;
-            let adicionaisSelecionados = [];
-            let precoBaseItem = 0;
-            let tamanhoSelecionado = null;
-
-            // Função para mostrar o popup de adicionais
-            // Função para mostrar o popup de tamanho e adicionais
-            function mostrarPopupAdicionais(item) {
-                console.log('🎯 Mostrando popup de tamanho e adicionais para:', item.nome);
-
-                itemAtual = item;
-                adicionaisSelecionados = [];
-                precoBaseItem = item.preco;
-                tamanhoSelecionado = null; // Nova variável para armazenar o tamanho
-
-                const overlay = document.getElementById('confirmacao-overlay-adicionais');
-                const containerAdicionais = document.getElementById('adicionais-container');
-                const containerTamanho = document.getElementById('tamanho-options-popup');
-                const resumoNome = document.getElementById('resumo-item-nome');
-                const resumoPreco = document.getElementById('resumo-item-preco');
-
-                if (!overlay || !containerAdicionais || !containerTamanho) {
-                    console.error('❌ Elementos do popup não encontrados');
-                    mostrarOverlayObservacao(item); // Fallback
-                    return;
-                }
-
-                // Atualizar resumo do item principal
-                resumoNome.textContent = item.nome;
-                resumoPreco.textContent = `R$ ${item.preco.toFixed(2)}`;
-
-                // Carregar tamanhos
-                carregarTamanhosNoPopup(containerTamanho, item);
-
-                // Carregar adicionais
-                carregarAdicionaisNoPopup(containerAdicionais);
-
-                // Atualizar total
-                atualizarTotalAdicionais();
-
-                // Mostrar overlay
-                overlay.classList.add('ativo');
-
-                // Configurar event listeners
-                configurarEventListenersAdicionais();
             }
 
             // Nova função para carregar os tamanhos no popup
@@ -2910,179 +3466,6 @@ include "verifica_login.php";
 
                     container.appendChild(adicionalElement);
                 });
-            }
-
-            // Função para configurar os event listeners do popup de adicionais
-            function configurarEventListenersAdicionais() {
-                console.log('🔗 Configurando event listeners...');
-
-                // Event Listeners para Tamanho
-                document.querySelectorAll('.tamanho-option').forEach(option => {
-                    option.addEventListener('click', function(e) {
-                        if (!e.target.classList.contains('tamanho-checkbox')) {
-                            const radio = this.querySelector('.tamanho-checkbox');
-
-                            // Marcar este radio e desmarcar outros
-                            document.querySelectorAll('.tamanho-checkbox').forEach(r => {
-                                r.checked = false;
-                                r.closest('.tamanho-option').classList.remove('selecionado');
-                            });
-
-                            radio.checked = true;
-                            this.classList.add('selecionado');
-
-                            // Atualizar tamanho selecionado
-                            tamanhoSelecionado = {
-                                nome: radio.dataset.nome,
-                                preco_base: parseFloat(radio.dataset.preco)
-                            };
-
-                            atualizarTotalAdicionais();
-                            atualizarResumoTamanho();
-                        }
-                    });
-                });
-
-                // Event Listeners para Adicionais
-                document.querySelectorAll('.adicional-item').forEach(item => {
-                    item.addEventListener('click', function(e) {
-                        if (!e.target.classList.contains('adicional-checkbox')) {
-                            const checkbox = this.querySelector('.adicional-checkbox');
-                            const estavaSelecionado = checkbox.checked;
-
-                            checkbox.checked = !estavaSelecionado;
-
-                            if (checkbox.checked) {
-                                this.classList.add('selecionado');
-                                adicionarAdicional({
-                                    id: checkbox.dataset.id,
-                                    nome: checkbox.dataset.nome,
-                                    preco: parseFloat(checkbox.dataset.preco)
-                                });
-                            } else {
-                                this.classList.remove('selecionado');
-                                removerAdicional(checkbox.dataset.id);
-                            }
-
-                            atualizarTotalAdicionais();
-                        }
-                    });
-                });
-
-                // Botões de navegação (mantém o mesmo)
-                const btnVoltar = document.getElementById('btn-voltar-adicionais');
-                if (btnVoltar) {
-                    btnVoltar.onclick = function() {
-                        console.log('❌ Cancelando personalização');
-                        document.getElementById('confirmacao-overlay-adicionais').classList.remove('ativo');
-                        adicionaisSelecionados = [];
-                        itemAtual = null;
-                        tamanhoSelecionado = null;
-                    };
-                }
-
-                const btnContinuar = document.getElementById('btn-continuar-observacao');
-                if (btnContinuar) {
-                    btnContinuar.onclick = function() {
-                        console.log('➡️ Continuando para observação');
-                        document.getElementById('confirmacao-overlay-adicionais').classList.remove('ativo');
-                        mostrarOverlayObservacaoComAdicionais();
-                    };
-                }
-            }
-
-            // Função para adicionar um adicional
-            function adicionarAdicional(adicional) {
-                if (!adicionaisSelecionados.find(a => a.id === adicional.id)) {
-                    adicionaisSelecionados.push(adicional);
-                    atualizarListaAdicionaisSelecionados();
-                }
-            }
-
-            // Função para remover um adicional
-            function removerAdicional(adicionalId) {
-                adicionaisSelecionados = adicionaisSelecionados.filter(a => a.id != adicionalId);
-                atualizarListaAdicionaisSelecionados();
-            }
-
-            // Função para atualizar a lista de adicionais selecionados
-            function atualizarListaAdicionaisSelecionados() {
-                const container = document.getElementById('adicionais-selecionados');
-                container.innerHTML = '';
-
-                adicionaisSelecionados.forEach(adicional => {
-                    const elemento = document.createElement('div');
-                    elemento.className = 'adicional-selecionado';
-                    elemento.innerHTML = `
-            <span>${adicional.nome}</span>
-            <span>
-                + R$ ${adicional.preco.toFixed(2)}
-                <span class="remover" data-id="${adicional.id}">×</span>
-            </span>
-        `;
-                    container.appendChild(elemento);
-                });
-
-                // Event listeners para remover adicionais
-                container.querySelectorAll('.remover').forEach(remover => {
-                    remover.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const adicionalId = this.dataset.id;
-                        removerAdicional(adicionalId);
-
-                        // Desmarcar o checkbox correspondente
-                        const checkbox = document.querySelector(`.adicional-checkbox[data-id="${adicionalId}"]`);
-                        if (checkbox) {
-                            checkbox.checked = false;
-                            checkbox.closest('.adicional-item').classList.remove('selecionado');
-                        }
-
-                        atualizarTotalAdicionais();
-                    });
-                });
-            }
-
-            // Função para atualizar o total com adicionais
-            function atualizarTotalAdicionais() {
-                if (!itemAtual) {
-                    console.error('❌ itemAtual não definido');
-                    return;
-                }
-
-                const precoTamanho = tamanhoSelecionado ? tamanhoSelecionado.preco_base : 0;
-                const totalAdicionais = adicionaisSelecionados.reduce((sum, adicional) => sum + adicional.preco, 0);
-                const totalFinal = itemAtual.preco + precoTamanho + totalAdicionais;
-
-                console.log('💰 Calculando total:', {
-                    precoBase: itemAtual.preco,
-                    precoTamanho: precoTamanho,
-                    totalAdicionais: totalAdicionais,
-                    totalFinal: totalFinal
-                });
-
-                const totalElement = document.getElementById('total-com-adicionais');
-                if (totalElement) {
-                    totalElement.textContent = totalFinal.toFixed(2);
-                }
-
-                // Habilitar/desabilitar botão Continuar
-                const btnContinuar = document.getElementById('btn-continuar-observacao');
-                if (btnContinuar) {
-                    btnContinuar.disabled = totalFinal <= 0;
-                }
-            }
-
-            function atualizarResumoTamanho() {
-                const container = document.getElementById('tamanho-selecionado');
-
-                if (tamanhoSelecionado) {
-                    container.innerHTML = `
-            <p>${tamanhoSelecionado.nome.charAt(0).toUpperCase() + tamanhoSelecionado.nome.slice(1)}</p>
-            <p>+ R$ ${tamanhoSelecionado.preco_base.toFixed(2)}</p>
-        `;
-                } else {
-                    container.innerHTML = '';
-                }
             }
 
             // Função para mostrar o popup de observação (após adicionais)
@@ -3191,59 +3574,7 @@ include "verifica_login.php";
                 console.log('✅ Item criado com tamanho:', itemFinal);
                 return itemFinal;
             }
-            // Função para mostrar o overlay de observação
-            function mostrarOverlayObservacao(item) {
-                console.log('🎯 Verificando tipo do item:', item.nome);
 
-                // 🔴 VERIFICAR SE É A PIZZA PERSONALIZADA (mais critérios)
-                const ehPizzaPersonalizada =
-                    item.nome.toLowerCase().includes('personalizada') ||
-                    item.id === 1 || // ID específico
-                    item.descricao.toLowerCase().includes('monte sua') ||
-                    item.descricao.toLowerCase().includes('personalizada');
-
-                if (ehPizzaPersonalizada) {
-                    console.log('Item é Pizza Personalizada, redirecionando ao monte sua pizza');
-
-                    // Fechar qualquer overlay aberto
-                    const overlayAdicionais = document.getElementById('confirmacao-overlay-adicionais');
-                    const overlayObservacao = document.getElementById('confirmacao-overlay-observacao');
-
-                    if (overlayAdicionais) overlayAdicionais.classList.remove('ativo');
-                    if (overlayObservacao) overlayObservacao.classList.remove('ativo');
-
-                    showPage('monte-sua-pizza');
-                    return;
-                }
-
-                // Verificar se é uma pizza salgada (pode ter adicionais salgados)
-                const ehPizzaSalgada = item.nome.toLowerCase().includes('pizza') ||
-                    item.descricao.toLowerCase().includes('pizza') ||
-                    item.id != 1;
-
-                if (ehPizzaSalgada) {
-                    mostrarPopupAdicionais(item);
-                } else {
-                    // Para não-pizzas, ir direto para observação
-                    const overlay = document.getElementById('confirmacao-overlay-observacao');
-                    const textarea = overlay.querySelector('textarea');
-                    const form = overlay.querySelector('#form-observacao');
-
-                    textarea.value = '';
-                    overlay.classList.add('ativo');
-
-                    form.onsubmit = function(e) {
-                        e.preventDefault();
-                        const observacao = textarea.value.trim();
-                        adicionarAoCarrinho(item, observacao, false);
-                        overlay.classList.remove('ativo');
-                    };
-
-                    document.getElementById('btn-voltar-observacao').onclick = function() {
-                        overlay.classList.remove('ativo');
-                    };
-                }
-            }
         }
 
         function initCarrinho() {
@@ -3303,10 +3634,26 @@ include "verifica_login.php";
             });
         }
 
-        // Função adicionarAoCarrinho
         function adicionarAoCarrinho(item, observacao = '', mostrarAlerta = true) {
             console.log('🛒 Iniciando adição ao carrinho...');
             console.log('Item recebido:', item);
+
+            // Validar item obrigatoriamente
+            if (!item || typeof item !== 'object') {
+                console.error('❌ Item inválido:', item);
+                return false;
+            }
+
+            // Validar campos obrigatórios
+            if (!item.nome || item.nome === 'Item sem nome') {
+                console.error('❌ Nome do item inválido:', item.nome);
+                item.nome = 'Produto Personalizado'; // Fallback
+            }
+
+            if (typeof item.preco !== 'number' || item.preco <= 0) {
+                console.error('❌ Preço do item inválido:', item.preco);
+                return false;
+            }
 
             // Garantir que carrinho é um ARRAY
             if (!window.carrinho || !Array.isArray(window.carrinho)) {
@@ -3314,33 +3661,26 @@ include "verifica_login.php";
                 window.carrinho = [];
             }
 
-            // Validar item
-            if (!item || typeof item !== 'object') {
-                console.error('❌ Item inválido:', item);
-                return false;
-            }
-
-            // Criar ID único mais robusto
-            const itemIdBase = item.id ? item.id.toString().split('_')[0] : 'sem_id';
-            const adicionaisIds = item.adicionais ?
-                item.adicionais.map(a => a.id).sort().join('_') : '';
-            const observacaoHash = observacao ?
-                btoa(observacao).substring(0, 10) : '';
-
-            const itemUniqueId = `${itemIdBase}_${adicionaisIds}_${observacaoHash}_${Date.now()}`;
+            // Criar ID único robusto
+            const itemIdBase = item.id ? item.id.toString() : 'sem_id';
+            const observacaoHash = observacao ? btoa(observacao).substring(0, 8) : 'sem_obs';
+            const itemUniqueId = `${itemIdBase}_${observacaoHash}_${Date.now()}`;
 
             console.log('🔍 Procurando item existente...');
             console.log('ID único gerado:', itemUniqueId);
-            console.log('Carrinho atual:', window.carrinho);
 
             let itemExistente = null;
             let itemIndex = -1;
 
-            // Buscar item existente
+            // Buscar item existente (comparação mais precisa)
             for (let i = 0; i < window.carrinho.length; i++) {
                 const produto = window.carrinho[i];
 
-                // Comparação mais precisa
+                // Para itens personalizados, sempre criar novo item
+                if (item.personalizada) {
+                    continue; // Não procurar existente para personalizados
+                }
+
                 const mesmoNome = produto.nome === item.nome;
                 const mesmaObservacao = (produto.observacao || '') === (observacao || '');
                 const mesmosAdicionais = JSON.stringify(produto.adicionais || []) ===
@@ -3353,24 +3693,30 @@ include "verifica_login.php";
                 }
             }
 
-            if (itemExistente) {
-                // Se já existe, aumenta a quantidade
+            if (itemExistente && !item.personalizada) {
+                // Se já existe e NÃO é personalizado, aumenta a quantidade
                 console.log('➕ Item existente encontrado, aumentando quantidade');
                 itemExistente.quantidade += 1;
                 window.carrinho[itemIndex] = itemExistente;
             } else {
-                // Se não existe, adiciona novo item
+                // Se não existe ou É personalizado, adiciona novo item
                 console.log('✅ Adicionando novo item ao carrinho');
                 const novoItem = {
                     id: itemUniqueId,
-                    nome: item.nome || 'Item sem nome',
+                    nome: item.nome || 'Produto Personalizado',
                     descricao: item.descricao || '',
                     preco: typeof item.preco === 'number' ? item.preco : 0,
-                    imagem: item.imagem || './assets/placeholder-pizza.jpg',
+                    imagem: item.imagem || './assets/placeholder.svg',
                     observacao: observacao || '',
                     adicionais: Array.isArray(item.adicionais) ? [...item.adicionais] : [],
-                    quantidade: 1
+                    quantidade: 1,
+                    personalizada: item.personalizada || false
                 };
+
+                // Adicionar ingredientes se for pizza personalizada
+                if (item.personalizada && item.ingredientes) {
+                    novoItem.ingredientes = [...item.ingredientes];
+                }
 
                 window.carrinho.push(novoItem);
                 console.log('Novo item adicionado:', novoItem);
@@ -3384,78 +3730,11 @@ include "verifica_login.php";
                 console.error('❌ Erro ao salvar no localStorage:', error);
             }
 
+            // Atualizar interface
             atualizarCarrinho();
             atualizarContadorCarrinho();
+
             return true;
-        }
-
-        function atualizarCarrinho() {
-            console.log('🔄 Atualizando interface do carrinho...');
-
-            const carrinhoItens = document.getElementById('carrinho-itens');
-            const carrinhoTotal = document.getElementById('carrinho-total');
-
-            if (!carrinhoItens || !carrinhoTotal) {
-                console.error('❌ Elementos do carrinho não encontrados');
-                return;
-            }
-
-            if (!window.carrinho || !Array.isArray(window.carrinho) || window.carrinho.length === 0) {
-                carrinhoItens.innerHTML = '<div class="carrinho-vazio">Seu carrinho está vazio</div>';
-                carrinhoTotal.textContent = '0.00';
-                console.log('🛒 Carrinho vazio');
-                return;
-            }
-
-            carrinhoItens.innerHTML = '';
-
-            window.carrinho.forEach((item, index) => {
-                // Verificar se tem adicionais
-                const adicionaisHTML = item.adicionais && item.adicionais.length > 0 ?
-                    `<p class="adicionais"><i class="fa fa-plus-square-o" aria-hidden="true" style="margin-right: 10px;"></i>${item.adicionais.map(a => a.nome).join(', ')}</p>` :
-                    '';
-
-                // Verificar se tem observação
-                const observacaoHTML = item.observacao && item.observacao.trim() !== '' ?
-                    `<p class="observacao"><i class="fa-regular fa-comment" style="margin-right: 10px;"></i>${item.observacao}</p>` :
-                    '';
-
-                const itemElement = document.createElement('div');
-                itemElement.className = 'carrinho-item';
-                itemElement.innerHTML = `
-            <div class="item-info" style="width: 500px;">
-                <img src="${item.imagem}" alt="${item.nome}" onerror="this.src='assets/placeholder-pizza.jpg'">
-                <div class="item-detalhes">
-                    <h3>${item.nome}</h3>
-                    <p class="descricao">${item.descricao}</p>
-                    ${adicionaisHTML}
-                    ${observacaoHTML}
-                    <p class="preco">R$ ${item.preco.toFixed(2)}</p>
-                </div>
-            </div>
-            <div class="item-acoes">
-                <div class="quantidade-controle">
-                    <button class="diminuir" data-index="${index}"><p>-</p></button>
-                    <span>${item.quantidade}</span>
-                    <button class="aumentar" data-index="${index}"><p>+</p></button>
-                </div>
-                <button class="remover-item" data-index="${index}">×</button>
-            </div>
-            <div class="item-preco">
-                R$ ${(item.preco * item.quantidade).toFixed(2)}
-            </div>
-        `;
-
-                carrinhoItens.appendChild(itemElement);
-            });
-
-            const total = window.carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
-            carrinhoTotal.textContent = total.toFixed(2);
-
-            // Adicionar eventos
-            adicionarEventosCarrinho();
-
-            console.log('✅ Interface do carrinho atualizada');
         }
 
         function alterarQuantidade(index, mudanca) {
@@ -3531,7 +3810,7 @@ include "verifica_login.php";
                     const btn = document.createElement('button');
                     btn.className = 'ingrediente-btn';
                     btn.innerHTML = `
-                <img src="${ing.imagem}" alt="${ing.nome}" onerror="this.src='assets/placeholder-ingrediente.png'">
+                <img src="${ing.imagem}" alt="${ing.nome}" onerror="this.src='assets/placeholder.svg'">
                 <span>${ing.nome}</span>
             `;
                     btn.addEventListener('click', () => adicionarIngrediente(ing));
@@ -3678,18 +3957,18 @@ include "verifica_login.php";
                 document.getElementById('total-pedido').textContent = total.toFixed(2);
             }
 
-function limparPizza() {
-    ingredientesSelecionados.length = 0;
-    ingredientesDesenhados.length = 0;
-    
-    // Resetar para tamanho médio
-    const radioMedio = document.querySelector('input[name="tamanho"][value="Média"]');
-    if (radioMedio) radioMedio.checked = true;
-    
-    atualizarListaIngredientes();
-    redesenharPizza();
-    calcularTotal();
-}
+            function limparPizza() {
+                ingredientesSelecionados.length = 0;
+                ingredientesDesenhados.length = 0;
+
+                // Resetar para tamanho médio
+                const radioMedio = document.querySelector('input[name="tamanho"][value="Média"]');
+                if (radioMedio) radioMedio.checked = true;
+
+                atualizarListaIngredientes();
+                redesenharPizza();
+                calcularTotal();
+            }
 
             btnFinalizar.addEventListener('click', function() {
                 if (ingredientesSelecionados.length === 0) {
@@ -3732,75 +4011,575 @@ function limparPizza() {
                 });
             }
 
-function adicionarPizzaAoCarrinho(observacao = '') {
-    console.log('🍕 Iniciando adição da pizza ao carrinho...');
-    
-    // Obter o tamanho selecionado
-    const tamanhoSelecionado = document.querySelector('input[name="tamanho"]:checked');
-    if (!tamanhoSelecionado) {
-        alert('Por favor, selecione um tamanho!');
-        return;
-    }
+            function adicionarPizzaAoCarrinho(observacao = '') {
+                console.log('🍕 Iniciando adição da pizza ao carrinho...');
 
-    const tamanhoTexto = {
-        'Pequena': 'Pizza Pequena Personalizada',
-        'Média': 'Pizza Média Personalizada', 
-        'Grande': 'Pizza Grande Personalizada'
-    }[tamanhoSelecionado.value] || 'Pizza Personalizada';
+                // Obter o tamanho selecionado
+                const tamanhoSelecionado = document.querySelector('input[name="tamanho"]:checked');
+                if (!tamanhoSelecionado) {
+                    alert('Por favor, selecione um tamanho!');
+                    return;
+                }
 
-    // Criar descrição dos ingredientes
-    const ingredientesDesc = ingredientesSelecionados.map(ing => ing.nome).join(', ');
-    const precoTotal = parseFloat(document.getElementById('total-pedido').textContent);
+                const tamanhoTexto = {
+                    'Pequena': 'Pizza Pequena',
+                    'Média': 'Pizza Média',
+                    'Grande': 'Pizza Grande'
+                } [tamanhoSelecionado.value] || 'Pizza Personalizada';
 
-    // Criar objeto da pizza
-    const pizzaPersonalizada = {
-        id: `pizza_personalizada_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        nome: tamanhoTexto,
-        descricao: ingredientesDesc || 'Pizza personalizada',
-        preco: precoTotal,
-        imagem: './assets/pizzaBase.svg',
-        observacao: observacao,
-        quantidade: 1,
-        personalizada: true,
-        ingredientes: [...ingredientesSelecionados] // Manter cópia dos ingredientes
-    };
+                // Criar descrição dos ingredientes
+                const ingredientesDesc = ingredientesSelecionados.map(ing => ing.nome).join(', ');
+                const precoTotal = parseFloat(document.getElementById('total-pedido').textContent);
 
-    console.log('✅ Pizza criada:', pizzaPersonalizada);
+                // Criar objeto da pizza
+                const pizzaPersonalizada = {
+                    id: `pizza_personalizada_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    nome: tamanhoTexto,
+                    descricao: ingredientesDesc || 'Pizza personalizada',
+                    preco: precoTotal,
+                    imagem: './assets/logo-square.svg',
+                    observacao: observacao,
+                    quantidade: 1,
+                    personalizada: true,
+                    ingredientes: [...ingredientesSelecionados] // Manter cópia dos ingredientes
+                };
 
-    // Adicionar ao carrinho usando a função unificada
-    const sucesso = adicionarAoCarrinho(pizzaPersonalizada, observacao, false);
-    
-    if (sucesso) {
-        // Fechar overlay
-        const overlay = document.getElementById('confirmacao-overlay-observacao');
-        overlay.classList.remove('ativo');
-        
-        // Limpar a pizza para o próximo pedido
-        limparPizza();
-        
-        // Mostrar confirmação
-        mostrarConfirmacaoAdicao(pizzaPersonalizada.nome);
-        
-        // Ir para o carrinho
-        showPage('carrinho');
-    }
-}
+                console.log('✅ Pizza criada:', pizzaPersonalizada);
 
-function mostrarConfirmacaoAdicao(nomeProduto) {
-    const overlay = document.getElementById('confirmacao-overlay-carrinho');
-    const textoConfirmacao = document.getElementById('confirmacao-texto-carrinho');
-    
-    textoConfirmacao.textContent = `${nomeProduto} foi adicionado ao carrinho!`;
-    overlay.classList.add('ativo');
+                // Adicionar ao carrinho usando a função unificada
+                const sucesso = adicionarAoCarrinho(pizzaPersonalizada, observacao, false);
 
-    // Configurar o botão de confirmação
-    const btnConfirmacao = document.getElementById('confirmacao-btn-carrinho');
-    btnConfirmacao.onclick = function() {
-        overlay.classList.remove('ativo');
-    };
-}
+                if (sucesso) {
+                    // Fechar overlay
+                    const overlay = document.getElementById('confirmacao-overlay-observacao');
+                    overlay.classList.remove('ativo');
+
+                    // Limpar a pizza para o próximo pedido
+                    limparPizza();
+
+                    // Ir para o carrinho
+                    showPage('carrinho');
+                }
+            }
+
+            function mostrarConfirmacaoAdicao(nomeProduto) {
+                const overlay = document.getElementById('confirmacao-overlay-carrinho');
+                const textoConfirmacao = document.getElementById('confirmacao-texto-carrinho');
+
+                textoConfirmacao.textContent = `${nomeProduto} foi adicionado ao carrinho!`;
+                overlay.classList.add('ativo');
+
+                // Configurar o botão de confirmação
+                const btnConfirmacao = document.getElementById('confirmacao-btn-carrinho');
+                btnConfirmacao.onclick = function() {
+                    overlay.classList.remove('ativo');
+                };
+            }
 
             window.removerIngrediente = removerIngrediente;
+        }
+
+        // Página "Monte sua Pizza Doce"
+        async function initPizzaBuilderDoce() {
+            // Carregar ingredientes DOCES do banco de dados (tipo 2)
+            const ingredientesDoce = await carregarDadosAPI('api/ingredientes_api.php?tipo=2');
+
+            // Carregar tamanhos de PIZZAS (tipo_id = 1)
+            const tamanhosPizzaDoce = await carregarDadosAPI('api/tamanhos_api.php?tipo_id=1');
+
+            const ingredientesGrid = document.getElementById('ingredientes-grid-doce');
+            ingredientesGrid.innerHTML = '';
+
+            if (ingredientesDoce && ingredientesDoce.length > 0) {
+                ingredientesDoce.forEach(ing => {
+                    const btn = document.createElement('button');
+                    btn.className = 'ingrediente-btn';
+                    btn.innerHTML = `
+                <img src="${ing.imagem}" alt="${ing.nome}" onerror="this.src='assets/placeholder.svg'">
+                <span>${ing.nome}</span>
+            `;
+                    btn.addEventListener('click', () => adicionarIngredienteDoce(ing));
+                    ingredientesGrid.appendChild(btn);
+                });
+            } else {
+                ingredientesGrid.innerHTML = '<p class="sem-itens">Nenhum ingrediente doce disponível</p>';
+            }
+
+            // Configurar os radio buttons de tamanho
+            const tamanhoContainer = document.getElementById('tamanho-options-doce');
+            tamanhoContainer.innerHTML = '';
+
+            if (tamanhosPizzaDoce && tamanhosPizzaDoce.length > 0) {
+                tamanhosPizzaDoce.forEach(tamanho => {
+                    const label = document.createElement('label');
+                    label.innerHTML = `
+                <input type="radio" name="tamanho-doce" value="${tamanho.nome}" 
+                       data-preco="${tamanho.preco_base}" 
+                       ${tamanho.nome.toLowerCase() === 'média' ? 'checked' : ''}>
+                ${tamanho.nome} - R$ ${tamanho.preco_base.toFixed(2)}
+            `;
+                    tamanhoContainer.appendChild(label);
+                });
+            } else {
+                tamanhoContainer.innerHTML = '<p>Nenhum tamanho disponível</p>';
+            }
+
+            // Configurar canvas para pizza doce
+            const canvas = document.getElementById('pizza-canvas-doce');
+            const ctx = canvas.getContext('2d');
+
+            // Imagem da pizza base doce
+            const pizzaBaseImgDoce = new Image();
+            pizzaBaseImgDoce.src = './assets/pizzaBase.svg'; // Você pode criar esta imagem
+
+            // Array para armazenar os ingredientes doces desenhados
+            let ingredientesDesenhadosDoce = [];
+
+            pizzaBaseImgDoce.onload = function() {
+                redesenharPizzaDoce();
+            };
+
+            function redesenharPizzaDoce() {
+                // Limpa o canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Desenha a pizza base doce (centralizada)
+                const baseLargura = 488;
+                const baseAltura = 488;
+                const xBase = (canvas.width - baseLargura) / 2;
+                const yBase = (canvas.height - baseAltura) / 2;
+
+                ctx.drawImage(pizzaBaseImgDoce, xBase, yBase, baseLargura, baseAltura);
+
+                // Redesenha os ingredientes doces
+                ingredientesDesenhadosDoce.forEach(ing => {
+                    const img = new Image();
+                    img.src = ing.imagem;
+                    img.onload = function() {
+                        ctx.drawImage(img, ing.x, ing.y, ing.tamanho, ing.tamanho);
+                    };
+                });
+            }
+
+            const ingredientesSelecionadosDoce = [];
+            const ingredientesListDoce = document.getElementById('ingredientes-selecionados-list-doce');
+            const totalPedidoDoce = document.getElementById('total-pedido-doce');
+            const btnFinalizarDoce = document.getElementById('btn-finalizar-doce');
+
+            // Adiciona event listeners para os radio buttons de tamanho
+            const tamanhoRadiosDoce = document.querySelectorAll('input[name="tamanho-doce"]');
+            tamanhoRadiosDoce.forEach(radio => {
+                radio.addEventListener('change', calcularTotalDoce);
+            });
+
+            function adicionarIngredienteDoce(ingrediente) {
+                const jaExiste = ingredientesSelecionadosDoce.some(ing => ing.id === ingrediente.id);
+
+                if (!jaExiste) {
+                    ingredientesSelecionadosDoce.push(ingrediente);
+
+                    // Adiciona o ingrediente ao array de desenho
+                    const tamanhoIngrediente = 500;
+                    const x = canvas.width / 2 - tamanhoIngrediente / 2;
+                    const y = canvas.height / 2 - tamanhoIngrediente / 2;
+
+                    ingredientesDesenhadosDoce.push({
+                        ...ingrediente,
+                        x: x,
+                        y: y,
+                        tamanho: tamanhoIngrediente
+                    });
+
+                    atualizarListaIngredientesDoce();
+                    redesenharPizzaDoce();
+                    calcularTotalDoce();
+                }
+            }
+
+            function removerIngredienteDoce(index) {
+                ingredientesSelecionadosDoce.splice(index, 1);
+                ingredientesDesenhadosDoce.splice(index, 1);
+                atualizarListaIngredientesDoce();
+                redesenharPizzaDoce();
+                calcularTotalDoce();
+            }
+
+            function atualizarListaIngredientesDoce() {
+                ingredientesListDoce.innerHTML = '';
+                if (ingredientesSelecionadosDoce.length === 0) {
+                    const li = document.createElement('li');
+                    li.textContent = 'Nenhum ingrediente selecionado ainda';
+                    li.style.color = '#aaa';
+                    ingredientesListDoce.appendChild(li);
+                    btnFinalizarDoce.disabled = true;
+                    return;
+                }
+
+                ingredientesSelecionadosDoce.forEach((ing, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                ${ing.nome} - R$${ing.preco.toFixed(2)}
+                <button onclick="removerIngredienteDoce(${index})">×</button>
+            `;
+                    ingredientesListDoce.appendChild(li);
+                });
+
+                btnFinalizarDoce.disabled = false;
+            }
+
+            function calcularTotalDoce() {
+                const tamanhoSelecionado = document.querySelector('input[name="tamanho-doce"]:checked');
+
+                if (!tamanhoSelecionado) {
+                    console.error('Nenhum tamanho selecionado');
+                    return;
+                }
+
+                const precoBase = parseFloat(tamanhoSelecionado.getAttribute('data-preco'));
+                const precoIngredientes = ingredientesSelecionadosDoce.reduce((total, ing) => total + ing.preco, 0);
+                const total = precoBase + precoIngredientes;
+
+                document.getElementById('total-pedido-doce').textContent = total.toFixed(2);
+            }
+
+            function limparPizzaDoce() {
+                ingredientesSelecionadosDoce.length = 0;
+                ingredientesDesenhadosDoce.length = 0;
+
+                // Resetar para tamanho médio
+                const radioMedio = document.querySelector('input[name="tamanho-doce"][value="Média"]');
+                if (radioMedio) radioMedio.checked = true;
+
+                atualizarListaIngredientesDoce();
+                redesenharPizzaDoce();
+                calcularTotalDoce();
+            }
+
+            btnFinalizarDoce.addEventListener('click', function() {
+                if (ingredientesSelecionadosDoce.length === 0) {
+                    alert('Por favor, adicione pelo menos um ingrediente!');
+                    return;
+                }
+
+                // Mostrar overlay de observação
+                mostrarOverlayObservacaoPizzaDoce();
+            });
+
+            function mostrarOverlayObservacaoPizzaDoce() {
+                const overlay = document.getElementById('confirmacao-overlay-observacao');
+                const textarea = overlay.querySelector('textarea');
+
+                // Limpar o textarea
+                textarea.value = '';
+
+                // Mostrar overlay
+                overlay.classList.add('ativo');
+
+                // Configurar o formulário
+                const form = overlay.querySelector('form');
+                form.onsubmit = function(e) {
+                    e.preventDefault();
+                    const observacao = textarea.value.trim();
+
+                    // Adicionar a pizza doce ao carrinho com a observação
+                    adicionarPizzaDoceAoCarrinho(observacao);
+
+                    // Esconder o overlay
+                    overlay.classList.remove('ativo');
+                };
+
+                // Fechar ao clicar fora (opcional)
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) {
+                        overlay.classList.remove('ativo');
+                    }
+                });
+            }
+
+            function adicionarPizzaDoceAoCarrinho(observacao = '') {
+                console.log('🍰 Iniciando adição da pizza doce ao carrinho...');
+
+                // Obter o tamanho selecionado
+                const tamanhoSelecionado = document.querySelector('input[name="tamanho-doce"]:checked');
+                if (!tamanhoSelecionado) {
+                    alert('Por favor, selecione um tamanho!');
+                    return;
+                }
+
+                const tamanhoTexto = {
+                    'Pequena': 'Pizza Doce Pequena ',
+                    'Média': 'Pizza Doce Média',
+                    'Grande': 'Pizza Doce Grande'
+                } [tamanhoSelecionado.value] || 'Pizza Doce Personalizada';
+
+                // Criar descrição dos ingredientes
+                const ingredientesDesc = ingredientesSelecionadosDoce.map(ing => ing.nome).join(', ');
+                const precoTotal = parseFloat(document.getElementById('total-pedido-doce').textContent);
+
+                // Criar objeto da pizza doce
+                const pizzaDocePersonalizada = {
+                    id: `pizza_doce_personalizada_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    nome: tamanhoTexto,
+                    descricao: ingredientesDesc || 'Pizza doce personalizada',
+                    preco: precoTotal,
+                    imagem: './assets/square-doce.svg',
+                    observacao: observacao,
+                    quantidade: 1,
+                    personalizada: true,
+                    ingredientes: [...ingredientesSelecionadosDoce]
+                };
+
+                console.log('✅ Pizza doce criada:', pizzaDocePersonalizada);
+
+                // Adicionar ao carrinho usando a função unificada
+                const sucesso = adicionarAoCarrinho(pizzaDocePersonalizada, observacao, false);
+
+                if (sucesso) {
+                    // Fechar overlay
+                    const overlay = document.getElementById('confirmacao-overlay-observacao');
+                    overlay.classList.remove('ativo');
+
+                    // Limpar a pizza para o próximo pedido
+                    limparPizzaDoce();
+
+                    // Ir para o carrinho
+                    showPage('carrinho');
+                }
+            }
+
+            window.removerIngredienteDoce = removerIngredienteDoce;
+        }
+
+        // função para Montar a Pizza Doce
+        async function mostrarPopupPizzaDoce(item) {
+            console.log('🍰 Iniciando pizza doce personalizada...');
+
+            try {
+                // Carregar ingredientes DOCES (tipo 2)
+                const ingredientesDoces = await carregarDadosAPI('api/ingredientes_api.php?tipo=2');
+                // Carregar tamanhos de PIZZAS (tipo_id = 1)
+                const tamanhosPizzaDoce = await carregarDadosAPI('api/tamanhos_api.php?tipo_id=1');
+
+                if (!ingredientesDoces) {
+                    throw new Error('Não foi possível carregar ingredientes doces');
+                }
+                if (!tamanhosPizzaDoce) {
+                    throw new Error('Não foi possível carregar tamanhos');
+                }
+
+                console.log('✅ Ingredientes doces carregados:', ingredientesDoces.length);
+                console.log('✅ Tamanhos carregados:', tamanhosPizzaDoce.length);
+
+                // Configurar variáveis globais
+                itemAtual = item;
+                adicionaisSelecionados = [];
+                precoBaseItem = item.preco;
+                tamanhoSelecionado = null;
+
+                const overlay = document.getElementById('confirmacao-overlay-adicionais');
+                const containerAdicionais = document.getElementById('adicionais-container');
+                const containerTamanho = document.getElementById('tamanho-options-popup');
+                const resumoNome = document.getElementById('resumo-item-nome');
+                const resumoPreco = document.getElementById('resumo-item-preco');
+
+                // Atualizar resumo
+                resumoNome.textContent = item.nome;
+                resumoPreco.textContent = `R$ ${item.preco.toFixed(2)}`;
+
+                // Carregar tamanhos
+                await carregarTamanhosDinamicos(containerTamanho, 1, item); // tipo 1 para pizzas
+
+                // Carregar adicionais DOCES
+                containerAdicionais.innerHTML = '';
+                if (ingredientesDoces.length > 0) {
+                    ingredientesDoces.forEach(adicional => {
+                        const adicionalElement = document.createElement('div');
+                        adicionalElement.className = 'adicional-item';
+                        adicionalElement.innerHTML = `
+                    <div class="nome-preco">
+                        <div class="nome">${adicional.nome}</div>
+                        <div class="preco">+ R$ ${adicional.preco.toFixed(2)}</div>
+                    </div>
+                    <input type="checkbox" class="adicional-checkbox" 
+                           data-id="${adicional.id}" data-nome="${adicional.nome}" data-preco="${adicional.preco}">
+                `;
+                        containerAdicionais.appendChild(adicionalElement);
+                    });
+                } else {
+                    containerAdicionais.innerHTML = '<div class="sem-adicionais">Nenhum ingrediente doce disponível</div>';
+                }
+
+                // Atualizar total
+                atualizarTotalAdicionais();
+
+                // Configurar event listeners
+                configurarEventListenersAdicionais();
+
+                // Mostrar overlay
+                overlay.classList.add('ativo');
+                console.log('✅ Pizza doce configurada com sucesso');
+
+            } catch (error) {
+                console.error('❌ Erro na pizza doce:', error);
+                alert('Erro ao carregar pizza doce: ' + error.message);
+            }
+        }
+
+        function atualizarCarrinho() {
+            console.log('🔄 Atualizando interface do carrinho...');
+
+            const carrinhoItens = document.getElementById('carrinho-itens');
+            const carrinhoTotal = document.getElementById('carrinho-total');
+
+            if (!carrinhoItens || !carrinhoTotal) {
+                console.error('❌ Elementos do carrinho não encontrados');
+                return;
+            }
+
+            if (!window.carrinho || !Array.isArray(window.carrinho) || window.carrinho.length === 0) {
+                carrinhoItens.innerHTML = '<div class="carrinho-vazio">Seu carrinho está vazio</div>';
+                carrinhoTotal.textContent = '0.00';
+                console.log('🛒 Carrinho vazio');
+                return;
+            }
+
+            carrinhoItens.innerHTML = '';
+
+            window.carrinho.forEach((item, index) => {
+                // Verificar se tem adicionais
+                const adicionaisHTML = item.adicionais && item.adicionais.length > 0 ?
+                    `<p class="adicionais"><i class="fa fa-plus-square-o" aria-hidden="true" style="margin-right: 10px;"></i>${item.adicionais.map(a => a.nome).join(', ')}</p>` :
+                    '';
+
+                // Verificar se tem observação
+                const observacaoHTML = item.observacao && item.observacao.trim() !== '' ?
+                    `<p class="observacao"><i class="fa-regular fa-comment" style="margin-right: 10px;"></i>${item.observacao}</p>` :
+                    '';
+
+                // Verificar se tem ingredientes (pizza personalizada)
+                const ingredientesHTML = item.ingredientes && item.ingredientes.length > 0 ?
+                    `` :
+                    '';
+
+                const itemElement = document.createElement('div');
+                itemElement.className = 'carrinho-item';
+                itemElement.innerHTML = `
+            <div class="item-info" style="width: 500px;">
+                <img src="${item.imagem}" alt="${item.nome}" onerror="this.src='assets/placeholder.svg'">
+                <div class="item-detalhes">
+                    <h3>${item.nome}</h3>
+                    <p class="descricao">${item.descricao}</p>
+                    ${ingredientesHTML}
+                    ${adicionaisHTML}
+                    ${observacaoHTML}
+                    <p class="preco">R$ ${item.preco.toFixed(2)}</p>
+                </div>
+            </div>
+            <div class="item-acoes">
+                <div class="quantidade-controle">
+                    <button class="diminuir" data-index="${index}"><p>-</p></button>
+                    <span>${item.quantidade}</span>
+                    <button class="aumentar" data-index="${index}"><p>+</p></button>
+                </div>
+                <button class="remover-item" data-index="${index}">×</button>
+            </div>
+            <div class="item-preco">
+                R$ ${(item.preco * item.quantidade).toFixed(2)}
+            </div>
+        `;
+
+                carrinhoItens.appendChild(itemElement);
+            });
+
+            const total = window.carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
+            carrinhoTotal.textContent = total.toFixed(2);
+
+            // Adicionar eventos
+            adicionarEventosCarrinho();
+
+            console.log('✅ Interface do carrinho atualizada');
+        }
+
+        // Função para mostrar overlay de observação da pizza personalizada
+        function mostrarOverlayObservacaoPizza() {
+            const overlay = document.getElementById('confirmacao-overlay-observacao');
+            const textarea = overlay.querySelector('textarea');
+
+            // Limpar o textarea
+            textarea.value = '';
+
+            // Mostrar overlay
+            overlay.classList.add('ativo');
+
+            // Configurar o formulário
+            const form = overlay.querySelector('form');
+
+            // Remover event listeners anteriores
+            form.onsubmit = null;
+
+            form.onsubmit = function(e) {
+                e.preventDefault();
+                const observacao = textarea.value.trim();
+
+                // Adicionar a pizza ao carrinho com a observação
+                adicionarPizzaAoCarrinho(observacao);
+
+                // Esconder o overlay
+                overlay.classList.remove('ativo');
+            };
+
+            // Fechar ao clicar fora
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    overlay.classList.remove('ativo');
+                }
+            });
+        }
+
+        function removerAdicional(adicionalId) {
+            adicionaisSelecionados = adicionaisSelecionados.filter(a => a.id != adicionalId);
+            atualizarListaAdicionaisSelecionados();
+        }
+
+        function atualizarResumoTamanho() {
+            const container = document.getElementById('tamanho-selecionado');
+
+            if (tamanhoSelecionado) {
+                container.innerHTML = `
+            <p>${tamanhoSelecionado.nome.charAt(0).toUpperCase() + tamanhoSelecionado.nome.slice(1)}</p>
+            <p>+ R$ ${tamanhoSelecionado.preco_base.toFixed(2)}</p>
+        `;
+            } else {
+                container.innerHTML = '';
+            }
+        }
+
+        // Função auxiliar para descrições de tamanho
+        function obterDescricaoTamanho(nomeTamanho, tipoTamanhos) {
+            const descricoes = {
+                1: { // Pizzas
+                    'Pequena': '4 fatias - 25cm',
+                    'Média': '6 fatias - 30cm',
+                    'Grande': '8 fatias - 35cm',
+                    'pequena': '4 fatias - 25cm',
+                    'media': '6 fatias - 30cm',
+                    'grande': '8 fatias - 35cm'
+                },
+                2: { // Bebidas
+                    '350ml': 'Lata/garrafa pequena',
+                    '500ml': 'Garrafa média',
+                    'Garrafa / Jarra': '1 litro'
+                },
+                3: { // Sobremesas
+                    'Média': 'Porção individual',
+                    'Grande': 'Para compartilhar'
+                },
+                4: { // Vinhos
+                    'Garrafa': '750ml'
+                }
+            };
+
+            return descricoes[tipoTamanhos]?.[nomeTamanho] || '';
         }
     </script>
 </body>

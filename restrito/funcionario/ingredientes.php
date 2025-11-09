@@ -438,7 +438,7 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
                         </div>
                         <div class="product-info">
                             <h3>${ingrediente.nome}</h3>
-                            <p><span class="info-label">Preço Adicional:</span> R$ ${parseFloat(ingrediente.preco).toFixed(2)}</p>
+                            <p><span class="info-label">Preço:</span> R$ ${parseFloat(ingrediente.preco).toFixed(2)}</p>
                             <p><span class="info-label">Tipo:</span> ${ingrediente.tipo_nome}</p>
                             <p><span class="info-label">Status:</span> 
                                 <span class="status-badge ${ingrediente.disponivel ? 'status-active' : 'status-inactive'}">

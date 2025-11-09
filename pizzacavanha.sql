@@ -229,20 +229,23 @@ CREATE TABLE tamanhos (
 		('Frango', 4.00, 1, './assets/ingredientes/frango.png'),
 		('Alho', 1.00, 1, './assets/ingredientes/alho.png'),
         -- Doces
-        ('Morango Fresco', 4.50, 2, './assets/ingredientes/morango.png'),
+        ('Morangos', 4.50, 2, './assets/ingredientes/morango.png'),
 		('Banana Caramelizada', 3.80, 2, './assets/ingredientes/banana.png'),
-		('Framboesa Fresca', 5.20, 2, './assets/ingredientes/framboesa.png'),
+		('Framboesa', 5.20, 2, './assets/ingredientes/framboesa.png'),
 		('Mirtilos', 4.80, 2, './assets/ingredientes/mirtilo.png'),
 		('Gotas de Chocolate', 3.80, 2, './assets/ingredientes/gotas-chocolate.png'),
 		('Nutella', 5.50, 2, './assets/ingredientes/nutella.png'),
-		('Nozes Picadas', 5.00, 2, './assets/ingredientes/nozes.png'),
+		('Nozes', 5.00, 2, './assets/ingredientes/nozes.png'),
 		('Pistache', 5.50, 2, './assets/ingredientes/pistache.png'),
 		('Avelãs', 5.00, 2, './assets/ingredientes/avelas.png'),
 		('Canela em Pó', 2.50, 2, './assets/ingredientes/canela.png'),
 		('Baunilha', 3.00, 2, './assets/ingredientes/baunilha.png'),
 		('Coco Ralado', 3.20, 2, './assets/ingredientes/coco.png'),
-		('Hortelã Fresca', 2.80, 2, './assets/ingredientes/hortela.png'),
-		('Lascas de Limão', 3.00, 2, './assets/ingredientes/limao.png');
+		('Hortelã', 2.80, 2, './assets/ingredientes/hortela.png'),
+		('Lascas de Limão', 3.00, 2, './assets/ingredientes/limao.png'),
+        -- Bebidas
+        ('Canudo', 0.00, 3, './assets/ingredientes/placeholder.svg'),
+        ('Gelo e Limão', 0.00, 3,'./assets/ingredientes/placeholder.svg');
     INSERT INTO estados (nome) VALUES
 		('Em Processamento'),
         ('Preparando'),
@@ -257,6 +260,7 @@ CREATE TABLE tamanhos (
 	INSERT INTO tipo_entrega (tipo) VALUES 
 		('Delivery'),
         ('Retirada');
+        
 -- SELECT FROMs
 /*
     SELECT * FROM user_classes;

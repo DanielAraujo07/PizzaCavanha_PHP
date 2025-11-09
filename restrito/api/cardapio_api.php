@@ -26,8 +26,8 @@ try {
         $categorias[$row['nome']] = [];
     }
 
-    // Buscar todos os produtos (COM NOVO JOIN para tipos_produtos)
-    $sql_produtos = "SELECT p.*, c.nome as categoria_nome, tp.nome as tipo_nome 
+    // ✅ CORREÇÃO: Buscar todos os produtos INCLUINDO id_categoria
+    $sql_produtos = "SELECT p.*, c.nome as categoria_nome, c.id as id_categoria, tp.nome as tipo_nome 
                      FROM produtos p 
                      LEFT JOIN categorias c ON p.id_categoria = c.id 
                      LEFT JOIN tipos_produtos tp ON p.tipo_id = tp.id 
@@ -47,7 +47,9 @@ try {
             'preco' => (float)$row['preco'],
             'imagem' => $row['imagem'],
             'tipo_id' => (int)$row['tipo_id'],
-            'tipo_nome' => $row['tipo_nome']
+            'tipo_nome' => $row['tipo_nome'],
+            'id_categoria' => (int)$row['id_categoria'],
+            'categoria_nome' => $row['categoria_nome']
         ];
 
         $categorias[$categoria][] = $produto;
