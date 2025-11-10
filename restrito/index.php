@@ -4568,14 +4568,14 @@ include "verifica_login.php";
                 2: { // Bebidas
                     '350ml': 'Lata/garrafa pequena',
                     '500ml': 'Garrafa média',
-                    'Garrafa / Jarra': '1 litro'
+                    'Garrafa / Jarra': '1,5 Litros'
                 },
                 3: { // Sobremesas
                     'Média': 'Porção individual',
                     'Grande': 'Para compartilhar'
                 },
                 4: { // Vinhos
-                    'Garrafa': '750ml'
+                    'Garrafa': '1 Litro'
                 }
             };
 

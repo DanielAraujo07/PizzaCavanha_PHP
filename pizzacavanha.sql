@@ -244,7 +244,7 @@ CREATE TABLE tamanhos (
 		('Hortelã', 2.80, 2, './assets/ingredientes/hortela.png'),
 		('Lascas de Limão', 3.00, 2, './assets/ingredientes/limao.png'),
         -- Bebidas
-        ('Canudo', 0.00, 3, './assets/ingredientes/placeholder.svg'),
+        ('Canudo de Papel', 0.00, 3, './assets/ingredientes/placeholder.svg'),
         ('Gelo e Limão', 0.00, 3,'./assets/ingredientes/placeholder.svg');
     INSERT INTO estados (nome) VALUES
 		('Em Processamento'),

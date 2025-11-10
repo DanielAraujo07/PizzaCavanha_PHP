@@ -309,9 +309,9 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
                                                     <img src="<?php echo htmlspecialchars($ingrediente['imagem']); ?>" 
                                                          alt="<?php echo htmlspecialchars($ingrediente['nome']); ?>" 
                                                          class="product-image"
-                                                         onerror="this.src='../assets/placeholder-ingrediente.png'">
+                                                         onerror="this.src='../assets/placeholder.svg'">
                                                 <?php else: ?>
-                                                    <img src="../assets/placeholder-ingrediente.png" 
+                                                    <img src="../assets/placeholder.svg" 
                                                          alt="Sem imagem" 
                                                          class="product-image">
                                                 <?php endif; ?>
@@ -431,10 +431,10 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
                 modalBody.innerHTML = `
                     <div class="product-detail">
                         <div>
-                            <img src="${ingrediente.imagem || '../assets/placeholder-ingrediente.png'}" 
+                            <img src="${ingrediente.imagem || '../assets/placeholder.svg'}" 
                                  alt="${ingrediente.nome}" 
                                  class="product-detail-image"
-                                 onerror="this.src='../assets/placeholder-ingrediente.png'">
+                                 onerror="this.src='../assets/placeholder.svg'">
                         </div>
                         <div class="product-info">
                             <h3>${ingrediente.nome}</h3>
