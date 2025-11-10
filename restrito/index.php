@@ -1607,7 +1607,7 @@ include "verifica_login.php";
 
             i {
                 transition: ease .3s all;
-                color: #333;
+                color: #9A9A9A;
             }
         }
 
@@ -2018,8 +2018,8 @@ include "verifica_login.php";
                 <h2>Deu fome? Deixa o Cavanha cuidar.</h2>
                 <p>.</p>
                 <div class="hero-buttons-container">
-                    <a href="#" class="btn btn-primary nav-link" data-page="monte-sua-pizza">Monte sua Pizza</a>
-                    <a href="#" class="btn btn-secondary nav-link" data-page="cardapio">Ver Cardápio</a>
+                    <a href="#" class="btn btn-primary nav-link" data-page="cardapio">Ver Cardápio</a>
+                    <a href="#" class="btn btn-secondary nav-link" data-page="carrinho">Ver Carrinho</a>
                 </div>
             </div>
 
