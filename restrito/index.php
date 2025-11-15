@@ -518,7 +518,7 @@ include "verifica_login.php";
             color: var(--primary-color);
         }
 
-        #btn-finalizar {
+        #btn-finalizar, #btn-finalizar-doce {
             background-color: var(--success-color);
             color: white;
             padding: 12px 25px;
@@ -526,11 +526,11 @@ include "verifica_login.php";
             margin-top: 15px;
         }
 
-        #btn-finalizar:hover {
+        #btn-finalizar:hover, #btn-finalizar-doce:hover {
             background-color: #3d8b40;
         }
 
-        #btn-finalizar:disabled {
+        #btn-finalizar:disabled, #btn-finalizar-doce:disabled {
             background-color: #555;
             cursor: not-allowed;
             transform: none;
@@ -1008,7 +1008,6 @@ include "verifica_login.php";
             border: 2px solid #333;
             border-radius: 8px;
             color: #FFF;
-            font-family: 'Rajdhani', sans-serif;
             font-size: 16px;
             transition: border-color 0.3s;
         }
@@ -1678,14 +1677,13 @@ include "verifica_login.php";
         }
 
         textarea {
-            height: 254px;
+            height: 200px;
             width: 420px;
             padding: 5%;
             resize: none;
             outline: none;
             border: #242424 1px solid;
             font-size: 17px;
-            box-shadow: 0px 3px 4px #00000040;
             line-height: 1.5;
             background-color: #242424;
             color: #fff;
@@ -1695,12 +1693,10 @@ include "verifica_login.php";
 
         textarea:hover {
             border: #FFA500 1px solid;
-            box-shadow: 0px 0px 20px #ffa5004d;
         }
 
         textarea:not(:placeholder-shown) {
             border: #FFA500 1px solid;
-            box-shadow: 0px 0px 20px #ffa5004d;
         }
 
         .post-content-button {
@@ -1952,6 +1948,634 @@ include "verifica_login.php";
                 width: 100%;
                 height: auto;
             }
+        }
+
+        .adicionais-overlay-moderno {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border-radius: 20px;
+            width: 95%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .overlay-header-moderno {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+            padding: 1.5rem 2rem;
+            border-bottom: 2px solid #FFA500;
+            position: relative;
+        }
+
+        .btn-voltar-moderno {
+            position: absolute;
+            left: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 165, 0, 0.1);
+            border: 1px solid #FFA500;
+            color: #FFA500;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-voltar-moderno:hover {
+            background: #FFA500;
+            color: #1a1a1a;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .titulo-moderno {
+            color: #FFA500;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 0;
+            margin-bottom: 1rem;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            color: #666;
+            font-weight: 600;
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        .step::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: #333;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            border: 2px solid #555;
+        }
+
+        .step.active {
+            color: #FFA500;
+        }
+
+        .step.active::before {
+            background: #FFA500;
+            border-color: #FFA500;
+            box-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+
+        .overlay-content-moderno {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* PRODUTO INFO */
+        .produto-info-moderno {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid #333;
+        }
+
+        .produto-imagem {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid #FFA500;
+        }
+
+        .produto-detalhes h3 {
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .preco-base {
+            color: #FFA500;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        /* SEÇÕES */
+        .secao-moderno {
+            display: none;
+        }
+
+        .secao-moderno.active {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .titulo-secao {
+            color: #FFA500;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* TAMANHOS GRID */
+        .tamanhos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .tamanho-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tamanho-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #FFA500, #FFD700);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .tamanho-card:hover {
+            border-color: #FFA500;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 165, 0, 0.2);
+        }
+
+        .tamanho-card.selecionado {
+            border-color: #FFA500;
+            background: rgba(255, 165, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .tamanho-card.selecionado::before {
+            transform: scaleX(1);
+        }
+
+        .tamanho-card.selecionado::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #FFA500;
+            color: #1a1a1a;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .nome-tamanho {
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .preco-tamanho {
+            color: #FFA500;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .desc-tamanho {
+            color: #aaa;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* ADICIONAIS */
+        .secao-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .contador-adicionais {
+            background: rgba(255, 165, 0, 0.2);
+            color: #FFA500;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .adicionais-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .adicional-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .adicional-card:hover {
+            border-color: #FFA500;
+        }
+
+        .adicional-card.selecionado {
+            border-color: #FFA500;
+            background: rgba(255, 165, 0, 0.1);
+        }
+
+        .adicional-card.selecionado::after {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #FFA500;
+            color: #1a1a1a;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.7rem;
+        }
+
+        .adicional-imagem {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            margin-bottom: 0.75rem;
+        }
+
+        .nome-adicional {
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        .preco-adicional {
+            color: #FFA500;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        /* RESUMO DO PEDIDO */
+        .resumo-pedido-moderno {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: auto;
+        }
+
+        .resumo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #333;
+        }
+
+        .resumo-header h4 {
+            color: #FFA500;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .total-moderno {
+            color: #FFA500;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .itens-resumo {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .item-resumo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+        }
+
+        .item-nome {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .item-preco {
+            color: #FFA500;
+            font-weight: 600;
+        }
+
+        .itens-adicionais {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .adicional-resumo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: rgba(255, 165, 0, 0.05);
+            border-radius: 6px;
+            border-left: 3px solid #FFA500;
+        }
+
+        .adicional-resumo .item-nome {
+            font-size: 0.85rem;
+        }
+
+        .adicional-resumo .item-preco {
+            font-size: 0.85rem;
+        }
+
+        /* FOOTER */
+        .footer-actions, .overlay-footer-moderno {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .btn-continuar, .btn-principal {
+            background: linear-gradient(135deg, #FFA500, #FF8C00);
+            color: #1a1a1a;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+        }
+
+        .btn-continuar:hover, .btn-principal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 25px rgba(255, 165, 0, 0.4);
+        }
+
+        .btn-continuar:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Estado ativo dos botões */
+        .btn-proximo-active {
+            display: flex !important;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* RESPONSIVIDADE */
+        @media (max-width: 768px) {
+            .adicionais-overlay-moderno {
+                width: 95%;
+                height: 95vh;
+                border-radius: 15px;
+            }
+
+            .overlay-header-moderno {
+                padding: 1rem 1.5rem;
+            }
+
+            .overlay-content-moderno {
+                padding: 1.5rem;
+            }
+
+            .tamanhos-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .adicionais-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .produto-info-moderno {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .overlay-footer-moderno {
+                flex-direction: column;
+            }
+
+            .btn-principal,
+            .btn-secundario {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .progress-steps {
+                gap: 1rem;
+            }
+
+            .step {
+                font-size: 0.8rem;
+            }
+
+            .titulo-moderno {
+                font-size: 1.4rem;
+            }
+        }
+
+        /* Feedback visual melhorado */
+        .tamanho-card.selecionado {
+            border-color: #FFA500;
+            background: rgba(255, 165, 0, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 165, 0, 0.3);
+        }
+
+        .adicional-card.selecionado {
+            border-color: #FFA500;
+            background: rgba(255, 165, 0, 0.15);
+            box-shadow: 0 5px 15px rgba(255, 165, 0, 0.2);
+        }
+
+        /* Animação de confirmação */
+        @keyframes pulseConfirm {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .btn-principal:active {
+            animation: pulseConfirm 0.3s ease;
+        }
+
+        /* POPUP OBSERVAÇÕES MODERNO */
+        .obs-overlay-moderno {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border-radius: 20px;
+            width: 95%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .observacao-container-moderno {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .resumo-rapido {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid #333;
+        }
+
+        .resumo-rapido h4 {
+            color: #FFA500;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .itens-resumo-rapido {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .total-rapido {
+            color: #FFA500;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-align: right;
+            border-top: 1px solid #333;
+            padding-top: 1rem;
+        }
+
+        .contador-caracteres {
+            text-align: right;
+            color: #aaa;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        #observacao-texto {
+            margin-top: 8px;
+            padding: 3%;
+            resize: none;
+            outline: none;
+            border: #333 2px solid;
+            font-size: 15px;
+            line-height: 1.5;
+            background-color: #242424;
+            color: #fff;
+            border-radius: 30px;
+            transition: all 0.5s ease;
+        }
+
+        #observacao-texto:hover {
+            border-color: #FFA500;
+
+        }
+
+        #observacao-texto:not(:placeholder-shown) {
+            border-color: #FFA500;
         }
     </style>
 </head>
@@ -2307,56 +2931,91 @@ include "verifica_login.php";
 
     <!-- Popup de Tamanho e Adicionais -->
     <div class="confirmacao-overlay" id="confirmacao-overlay-adicionais">
-        <div class="adicionais-overlay">
-            <div class="overlay-content">
-                <div class="voltar">
-                    <button type="button" class="btn-voltar" id="btn-voltar-adicionais"><i class="fa fa-angle-left"></i></button>
+        <div class="adicionais-overlay-moderno">
+            <div class="overlay-header-moderno">
+                <button type="button" class="btn-voltar-moderno" id="btn-voltar-adicionais">
+                    <i class="fa fa-arrow-left"></i>
+                </button>
+                <h2 class="titulo-moderno">Personalize seu Pedido</h2>
+                <div class="progress-steps">
+                    <div class="step active" data-step="1">Tamanho</div>
+                    <div class="step" data-step="2">Adicionais</div>
+                    <div class="step" data-step="3">Observações</div>
                 </div>
+            </div>
 
-                <!-- Tamanho -->
-                <div class="popup-sections">
-                    <div class="tamanho-section">
-                        <h3>Escolha o Tamanho:</h3>
-                        <div class="tamanho-options-popup" id="tamanho-options-popup">
-                            <!-- Os tamanhos serão carregados via JavaScript -->
-                        </div>
-                    </div>
-
-                    <!-- Adicionais -->
-                    <div class="adicionais-section">
-                        <h3>Algum Adicional?</h3>
-
-                        <div class="adicionais-container" id="adicionais-container">
-                            <!-- Os adicionais serão carregados aqui via JavaScript -->
-                        </div>
-                        <!-- RESUMO DO PEDIDO -->
-                        <div class="adicionais-resumo">
-                            <div class="resumo-info">
-                                <div class="left">
-                                    <h3>Resumo do Pedido:</h3>
-                                    <div class="resumo-item">
-                                        <span class="item-nome" id="resumo-item-nome"></span>
-                                        <span class="item-preco" id="resumo-item-preco"></span>
-                                    </div>
-                                </div>
-                                <div class="right">
-                                    <div class="tamanho-selecionado" id="tamanho-selecionado">
-                                        <!-- Tamanho selecionado aparecerá aqui -->
-                                    </div>
-                                    <div class="adicionais-selecionados" id="adicionais-selecionados">
-                                        <!-- Adicionais selecionados aparecerão aqui -->
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="total-adicionais">
-                                <strong style="font-family: Rajdhani">Total: R$<span id="total-com-adicionais" style="font-family: Rajdhani">0.00</span></strong>
-                            </div>
-                        </div>
+            <div class="overlay-content-moderno">
+                <!-- PRODUTO SELECIONADO -->
+                <div class="produto-info-moderno">
+                    <img id="produto-imagem-moderno" src="" alt="Produto" class="produto-imagem">
+                    <div class="produto-detalhes">
+                        <h3 id="produto-nome-moderno"></h3>
+                        <div class="preco-base" id="preco-base-moderno"></div>
                     </div>
                 </div>
 
-                <div class="adicionais-botoes" style="display: flex; justify-content: center; align-items: center;">
-                    <button type="button" class="post-content-button" id="btn-continuar-observacao">CONTINUAR</button>
+                <!-- SEÇÃO TAMANHOS -->
+                <div class="secao-moderno active" id="secao-tamanho">
+                    <h3 class="titulo-secao">
+                        <i class="fa fa-ruler-combined"></i>
+                        Escolha o Tamanho
+                    </h3>
+                    <div class="tamanhos-grid" id="tamanhos-grid-moderno">
+                        <!-- Tamanhos serão carregados aqui -->
+                    </div>
+                </div>
+
+                <!-- SEÇÃO ADICIONAIS -->
+                <div class="secao-moderno" id="secao-adicionais">
+                    <div class="secao-header">
+                        <h3 class="titulo-secao">
+                            <i class="fa fa-plus-circle"></i>
+                            Adicionais (Opcionais)
+                        </h3>
+                        <div class="contador-adicionais">
+                            <span id="contador-adicionais">0</span> selecionados
+                        </div>
+                    </div>
+
+                    <div class="adicionais-grid" id="adicionais-grid-moderno">
+                        <!-- Adicionais serão carregados aqui -->
+                    </div>
+                </div>
+
+                <!-- RESUMO DO PEDIDO -->
+                <div class="resumo-pedido-moderno">
+                    <div class="resumo-header">
+                        <h4>Resumo do Pedido</h4>
+                        <div class="total-moderno" id="total-moderno">R$ 0,00</div>
+                    </div>
+
+                    <div class="itens-resumo">
+                        <div class="item-resumo" id="resumo-tamanho">
+                            <!-- Tamanho selecionado -->
+                        </div>
+                        <div class="itens-adicionais" id="resumo-adicionais">
+                            <!-- Adicionais selecionados -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overlay-footer-moderno">
+                <div class="footer-actions">
+                    <button type="button" class="btn-continuar" id="btn-proximo-tamanho" style="display: none;">
+                        Próximo: Adicionais
+                        <i class="fa fa-arrow-right"></i>
+                    </button>
+
+                    <button type="button" class="btn-continuar" id="btn-proximo-adicionais" style="display: none;">
+                        Próximo: Observações
+                        <i class="fa fa-arrow-right"></i>
+                    </button>
+
+                    <button type="button" class="btn-principal" id="btn-finalizar-adicionais" style="display: none;">
+                        Finalizar Personalização
+                        <i class="fa fa-check"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -2364,17 +3023,55 @@ include "verifica_login.php";
 
     <!-- Popup de Observação -->
     <div class="confirmacao-overlay" id="confirmacao-overlay-observacao">
-        <div class="obs-overlay">
-            <div class="overlay-content">
-                <div class="voltar">
-                    <button type="button" class="btn-voltar" id="btn-voltar-observacao"><i class="fa fa-angle-left"></i></button>
+        <div class="obs-overlay-moderno">
+            <div class="overlay-header-moderno">
+                <button type="button" class="btn-voltar-moderno" id="btn-cancelar-observacao">
+                    <i class="fa fa-times"></i>
+                </button>
+                <h2 class="titulo-moderno">Alguma Observação?</h2>
+                <div class="progress-steps">
+                    <div class="step" data-step="1">Tamanho</div>
+                    <div class="step" data-step="2">Adicionais</div>
+                    <div class="step active" data-step="3">Observações</div>
                 </div>
-                <h2>Alguma Observação?</h2>
-                <form id="form-observacao">
-                    <textarea class="form-control" name="observacao" maxlength="255"
-                        placeholder="Tirar tomate, molho de tomate, mussarela, manjericão [...]"></textarea>
-                    <button type="submit" class="post-content-button">ADICIONAR</button>
-                </form>
+            </div>
+
+            <div class="overlay-content-moderno">
+                <div class="observacao-container-moderno">
+                    <div class="resumo-rapido">
+                        <h4>Seu Pedido:</h4>
+                        <div class="itens-resumo-rapido">
+                            <div id="resumo-rapido-tamanho"></div>
+                            <div id="resumo-rapido-adicionais"></div>
+                        </div>
+                        <div class="total-rapido" id="total-rapido"></div>
+                    </div>
+
+                    <form id="form-observacao-moderno">
+                        <div class="form-group">
+                            <label for="observacao-texto" style="color: #FFA500; font-weight: 600; font-size: 18px; font-family: Rajdhani;">
+                                <i class="fa fa-edit"></i>
+                                Observações (opcional)
+                            </label>
+                            <textarea
+                                id="observacao-texto"
+                                name="observacao"
+                                maxlength="255"
+                                placeholder="Ex: Tirar tomate, mussarela, manjericão; Mande guardanapos; Quero o Monster branco; [...]"
+                                rows="4"></textarea>
+                            <div class="contador-caracteres">
+                                <span id="contador-chars">0</span>/255 caracteres
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="overlay-footer-moderno">
+                <button type="submit" form="form-observacao-moderno" class="btn-principal">
+                    Adicionar ao Carrinho
+                    <i class="fa fa-shopping-cart"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -2514,65 +3211,161 @@ include "verifica_login.php";
             ====================
         */
 
-        // Função para mostrar o popup de observação (após adicionais)
-        function mostrarOverlayObservacaoComAdicionais() {
-            console.log('📝 Indo para observação após adicionais');
+        function resetarEstadoPopupAdicionais() {
+            itemAtual = null;
+            adicionaisSelecionados = [];
+            precoBaseItem = 0;
+            tamanhoSelecionado = null;
 
-            const overlay = document.getElementById('confirmacao-overlay-observacao');
-            const textarea = overlay.querySelector('textarea');
-            const form = document.getElementById('form-observacao');
+            // Limpar seleções visuais
+            document.querySelectorAll('.tamanho-card.selecionado').forEach(card => {
+                card.classList.remove('selecionado');
+            });
 
-            if (!overlay || !form) {
-                console.error('❌ Popup de observação não encontrado');
-                return;
+            document.querySelectorAll('.adicional-card.selecionado').forEach(card => {
+                card.classList.remove('selecionado');
+            });
+
+            // Resetar contadores e totais
+            document.getElementById('contador-adicionais').textContent = '0';
+            document.getElementById('total-moderno').textContent = 'R$ 0,00';
+            document.getElementById('resumo-tamanho').innerHTML = '';
+            document.getElementById('resumo-adicionais').innerHTML = '';
+        }
+
+        // Modificar a função principal para sempre resetar antes de abrir
+        async function mostrarPopupAdicionaisModerno(item, tipoIngredientes = 1, tipoTamanhosEspecifico = null) {
+            console.log('🎯 Iniciando popup moderno para:', item.nome);
+
+            // SEMPRE RESETAR ANTES DE ABRIR NOVO POPUP
+            resetarEstadoPopupAdicionais();
+
+            itemAtual = item;
+            precoBaseItem = item.preco;
+
+            const overlay = document.getElementById('confirmacao-overlay-adicionais');
+
+            // Atualizar informações do produto
+            document.getElementById('produto-imagem-moderno').src = item.imagem || './assets/placeholder.svg';
+            document.getElementById('produto-nome-moderno').textContent = item.nome;
+            document.getElementById('preco-base-moderno').textContent = `R$ ${item.preco.toFixed(2)}`;
+            document.getElementById('total-moderno').textContent = `R$ ${item.preco.toFixed(2)}`;
+
+            // Determinar tipo_id para tamanhos
+            let tipoTamanhos = tipoTamanhosEspecifico || 1;
+
+            // Carregar tamanhos
+            await carregarTamanhosModernos(tipoTamanhos, item);
+
+            // Carregar adicionais (SEM FILTROS)
+            if (item.tipo_id === 1 || tipoIngredientes !== 1) {
+                await carregarAdicionaisModernos(tipoIngredientes);
+            } else {
+                document.getElementById('secao-adicionais').style.display = 'none';
             }
 
-            textarea.value = '';
+            // Mostrar primeira seção
+            mostrarSecao('tamanho');
+
+            // Configurar event listeners
+            configurarEventListenersModernos();
+
+            // Mostrar overlay
             overlay.classList.add('ativo');
+        }
 
-            // Remover event listeners anteriores para evitar duplicação
-            form.onsubmit = null;
+        // Função para mostrar o popup de observação (após adicionais)
+        function mostrarOverlayObservacaoComAdicionais() {
+            console.log('📝 Abrindo observações...');
 
-            // Configurar o formulário
-            form.onsubmit = function(e) {
-                e.preventDefault();
-                console.log('✅ Formulário de observação submetido');
+            const overlay = document.getElementById('confirmacao-overlay-observacao');
+            const form = document.getElementById('form-observacao-moderno');
+            const textarea = document.getElementById('observacao-texto');
 
-                const observacao = textarea.value.trim();
-                console.log('💬 Observação:', observacao);
-                console.log('🍕 Item atual:', itemAtual);
-                console.log('➕ Adicionais selecionados:', adicionaisSelecionados);
+            // Atualizar resumo rápido
+            atualizarResumoRapido();
 
-                // Criar item com adicionais
-                const itemComAdicionais = criarItemComAdicionais(itemAtual, adicionaisSelecionados, observacao);
-                console.log('🛒 Item final para carrinho:', itemComAdicionais);
-
-                // Adicionar ao carrinho
-                if (typeof adicionarAoCarrinho === 'function') {
-                    adicionarAoCarrinho(itemComAdicionais, observacao, true);
-                    console.log('✅ Item adicionado ao carrinho com sucesso!');
-                } else {
-                    console.error('❌ Função adicionarAoCarrinho não encontrada!');
-                    // Fallback
-                    alert('Erro ao adicionar ao carrinho. Função não encontrada.');
-                }
-
-                // Fechar overlay
-                overlay.classList.remove('ativo');
-
-                // Limpar variáveis temporárias
-                adicionaisSelecionados = [];
-                itemAtual = null;
+            // Configurar botão cancelar
+            document.getElementById('btn-cancelar-observacao').onclick = function() {
+                fecharECancelarPopupAdicionais();
             };
 
-            // Botão Voltar do popup de observação
-            const btnVoltarObservacao = document.getElementById('btn-voltar-observacao');
-            if (btnVoltarObservacao) {
-                btnVoltarObservacao.onclick = function() {
-                    console.log('↩️ Voltando para adicionais');
-                    overlay.classList.remove('ativo');
-                    mostrarPopupAdicionais(itemAtual); // Voltar para adicionais
-                };
+            // Configurar contador de caracteres
+            textarea.addEventListener('input', function() {
+                document.getElementById('contador-chars').textContent = this.value.length;
+            });
+
+            // Configurar formulário
+            form.onsubmit = function(e) {
+                e.preventDefault();
+                const observacao = textarea.value.trim();
+                adicionarAoCarrinhoComPersonalizacao(observacao);
+            };
+
+            // Mostrar overlay
+            overlay.classList.add('ativo');
+        }
+
+        function atualizarResumoRapido() {
+            const precoTamanho = tamanhoSelecionado ? tamanhoSelecionado.preco_base : 0;
+            const totalAdicionais = adicionaisSelecionados.reduce((sum, adicional) => sum + adicional.preco, 0);
+            const totalFinal = precoBaseItem + precoTamanho + totalAdicionais;
+
+            // Atualizar resumo do tamanho
+            const resumoTamanho = document.getElementById('resumo-rapido-tamanho');
+            if (tamanhoSelecionado) {
+                resumoTamanho.innerHTML = `
+            <div style="display: flex; justify-content: space-between;">
+                <span>${itemAtual.nome} - ${tamanhoSelecionado.nome}</span>
+                <span>R$ ${(precoBaseItem + precoTamanho).toFixed(2)}</span>
+            </div>
+        `;
+            } else {
+                resumoTamanho.innerHTML = `
+            <div style="display: flex; justify-content: space-between;">
+                <span>${itemAtual.nome}</span>
+                <span>R$ ${precoBaseItem.toFixed(2)}</span>
+            </div>
+        `;
+            }
+
+            // Atualizar resumo de adicionais
+            const resumoAdicionais = document.getElementById('resumo-rapido-adicionais');
+            if (adicionaisSelecionados.length > 0) {
+                resumoAdicionais.innerHTML = adicionaisSelecionados.map(adicional => `
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #aaa;">
+                <span>+ ${adicional.nome}</span>
+                <span>+ R$ ${adicional.preco.toFixed(2)}</span>
+            </div>
+        `).join('');
+            } else {
+                resumoAdicionais.innerHTML = '<div style="color: #666; font-size: 0.9rem;">Nenhum adicional</div>';
+            }
+
+            // Atualizar total
+            document.getElementById('total-rapido').textContent = `Total: R$ ${totalFinal.toFixed(2)}`;
+        }
+
+        // Função unificada para adicionar ao carrinho
+        function adicionarAoCarrinhoComPersonalizacao(observacao) {
+            console.log('🛒 Adicionando ao carrinho com personalização...');
+
+            // Criar item com personalização
+            const itemPersonalizado = criarItemComAdicionais(itemAtual, adicionaisSelecionados, observacao);
+
+            // Adicionar ao carrinho
+            const sucesso = adicionarAoCarrinho(itemPersonalizado, observacao, false);
+
+            if (sucesso) {
+                // Fechar todos os popups
+                document.getElementById('confirmacao-overlay-observacao').classList.remove('ativo');
+                document.getElementById('confirmacao-overlay-adicionais').classList.remove('ativo');
+
+                // Resetar estado
+                resetarEstadoPopupAdicionais();
+
+                // Mostrar confirmação
+                mostrarConfirmacaoAdicao(itemPersonalizado.nome);
             }
         }
 
@@ -2921,10 +3714,8 @@ include "verifica_login.php";
             return descricoes[tipoTamanhos]?.[nomeTamanho] || '';
         }
 
-        async function mostrarPopupAdicionais(item, tipoIngredientes = 1, tipoTamanhosEspecifico = null) {
-            console.log('🎯 Iniciando popup para:', item.nome,
-                'Ingredientes Tipo:', tipoIngredientes,
-                'Tamanhos Tipo:', tipoTamanhosEspecifico);
+        async function mostrarPopupAdicionaisModerno(item, tipoIngredientes = 1, tipoTamanhosEspecifico = null) {
+            console.log('🎯 Iniciando popup moderno para:', item.nome);
 
             itemAtual = item;
             adicionaisSelecionados = [];
@@ -2932,49 +3723,345 @@ include "verifica_login.php";
             tamanhoSelecionado = null;
 
             const overlay = document.getElementById('confirmacao-overlay-adicionais');
-            const containerAdicionais = document.getElementById('adicionais-container');
-            const containerTamanho = document.getElementById('tamanho-options-popup');
-            const resumoNome = document.getElementById('resumo-item-nome');
-            const resumoPreco = document.getElementById('resumo-item-preco');
 
-            // Atualizar resumo do item principal
-            resumoNome.textContent = item.nome;
-            resumoPreco.textContent = `R$ ${item.preco.toFixed(2)}`;
+            // Atualizar informações do produto
+            document.getElementById('produto-imagem-moderno').src = item.imagem || './assets/placeholder.svg';
+            document.getElementById('produto-nome-moderno').textContent = item.nome;
+            document.getElementById('preco-base-moderno').textContent = `R$ ${item.preco.toFixed(2)}`;
+            document.getElementById('total-moderno').textContent = `R$ ${item.preco.toFixed(2)}`;
 
             // Determinar tipo_id para tamanhos
-            let tipoTamanhos = tipoTamanhosEspecifico || 1; // Default para pizzas
+            let tipoTamanhos = tipoTamanhosEspecifico || 1;
 
-            if (!tipoTamanhosEspecifico) {
-                // Se não especificado, determinar automaticamente
-                if (item.tipo_id === 2) tipoTamanhos = 2; // Bebidas
-                else if (item.tipo_id === 3) tipoTamanhos = 3; // Sobremesas
-                else if (item.tipo_id === 4) tipoTamanhos = 4; // Vinhos
-            }
+            // Carregar tamanhos
+            await carregarTamanhosModernos(tipoTamanhos, item);
 
-            console.log('📏 Carregando tamanhos tipo:', tipoTamanhos);
-
-            // Carregar tamanhos específicos
-            await carregarTamanhosDinamicos(containerTamanho, tipoTamanhos, item);
-
-            // ✅ CORREÇÃO: SEMPRE carregar adicionais para pizzas (tipo_id 1)
-            // E para outros produtos que devem ter adicionais
-            if (item.tipo_id === 1 || tipoIngredientes !== 1) { // Pizzas ou quando especificado
-                console.log('🍕 Carregando ingredientes tipo:', tipoIngredientes);
-                await carregarAdicionaisDinamicos(containerAdicionais, tipoIngredientes);
+            // Carregar adicionais
+            if (item.tipo_id === 1 || tipoIngredientes !== 1) {
+                await carregarAdicionaisModernos(tipoIngredientes);
             } else {
-                console.log('🚫 Sem adicionais para este produto');
-                containerAdicionais.innerHTML = '<div class="sem-adicionais">Este produto não possui adicionais</div>';
+                document.getElementById('secao-adicionais').style.display = 'none';
             }
 
-            // Atualizar total
-            atualizarTotalAdicionais();
+            // Mostrar primeira seção
+            mostrarSecao('tamanho');
 
             // Configurar event listeners
-            configurarEventListenersAdicionais();
+            configurarEventListenersModernos();
 
             // Mostrar overlay
             overlay.classList.add('ativo');
-            console.log('✅ Popup aberto com sucesso');
+        }
+
+        // Função para carregar tamanhos no formato moderno
+        async function carregarTamanhosModernos(tipoTamanhos, item) {
+            const container = document.getElementById('tamanhos-grid-moderno');
+            const tamanhos = await carregarDadosAPI(`api/tamanhos_api.php?tipo_id=${tipoTamanhos}`);
+
+            container.innerHTML = '';
+
+            if (!tamanhos || tamanhos.length === 0) {
+                container.innerHTML = '<div class="sem-tamanhos">Nenhum tamanho disponível</div>';
+                tamanhoSelecionado = {
+                    nome: 'Único',
+                    preco_base: 0
+                };
+                return;
+            }
+
+            tamanhos.forEach((tamanho, index) => {
+                const tamanhoCard = document.createElement('div');
+                tamanhoCard.className = 'tamanho-card';
+                tamanhoCard.innerHTML = `
+            <div class="nome-tamanho">${tamanho.nome}</div>
+            <div class="preco-tamanho">${tamanho.preco_base > 0 ? `+ R$ ${tamanho.preco_base.toFixed(2)}` : 'Incluído'}</div>
+            <div class="desc-tamanho">${obterDescricaoTamanhoModerno(tamanho.nome, tipoTamanhos)}</div>
+        `;
+
+                if (index === 0) {
+                    tamanhoCard.classList.add('selecionado');
+                    tamanhoSelecionado = {
+                        nome: tamanho.nome,
+                        preco_base: parseFloat(tamanho.preco_base)
+                    };
+                    atualizarResumoTamanhoModerno();
+                }
+
+                tamanhoCard.addEventListener('click', () => {
+                    // Remover seleção anterior
+                    document.querySelectorAll('.tamanho-card').forEach(card => {
+                        card.classList.remove('selecionado');
+                    });
+
+                    // Selecionar atual
+                    tamanhoCard.classList.add('selecionado');
+                    tamanhoSelecionado = {
+                        nome: tamanho.nome,
+                        preco_base: parseFloat(tamanho.preco_base)
+                    };
+
+                    atualizarResumoTamanhoModerno();
+                    atualizarTotalModerno();
+                    atualizarBotoesNavegacao();
+                });
+
+                container.appendChild(tamanhoCard);
+            });
+        }
+
+        // Função para carregar adicionais no formato moderno
+        async function carregarAdicionaisModernos(tipoIngredientes) {
+            const container = document.getElementById('adicionais-grid-moderno');
+            const adicionais = await carregarDadosAPI(`api/ingredientes_api.php?tipo=${tipoIngredientes}`);
+
+            container.innerHTML = '';
+
+            if (!adicionais || adicionais.length === 0) {
+                container.innerHTML = '<div class="sem-adicionais">Nenhum adicional disponível</div>';
+                return;
+            }
+
+            adicionais.forEach(adicional => {
+                const adicionalCard = document.createElement('div');
+                adicionalCard.className = 'adicional-card';
+                adicionalCard.setAttribute('data-categoria', 'todos'); // Categoria padrão
+
+                adicionalCard.innerHTML = `
+            <img src="${adicional.imagem || './assets/ingredientes/placeholder.svg'}" 
+                 alt="${adicional.nome}" 
+                 class="adicional-imagem"
+                 onerror="this.src='./assets/ingredientes/placeholder.svg'">
+            <div class="nome-adicional">${adicional.nome}</div>
+            <div class="preco-adicional">+ R$ ${adicional.preco.toFixed(2)}</div>
+        `;
+
+                adicionalCard.addEventListener('click', () => {
+                    const jaSelecionado = adicionaisSelecionados.find(a => a.id === adicional.id);
+
+                    if (jaSelecionado) {
+                        // Remover
+                        adicionalCard.classList.remove('selecionado');
+                        adicionaisSelecionados = adicionaisSelecionados.filter(a => a.id !== adicional.id);
+                    } else {
+                        // Adicionar
+                        adicionalCard.classList.add('selecionado');
+                        adicionaisSelecionados.push({
+                            id: adicional.id,
+                            nome: adicional.nome,
+                            preco: parseFloat(adicional.preco)
+                        });
+                    }
+
+                    atualizarContadorAdicionais();
+                    atualizarResumoAdicionaisModerno();
+                    atualizarTotalModerno();
+                    atualizarBotoesNavegacao();
+                });
+
+                container.appendChild(adicionalCard);
+            });
+        }
+
+        // Funções auxiliares atualizadas
+        function mostrarSecao(nomeSecao) {
+            // Esconder todas as seções
+            document.querySelectorAll('.secao-moderno').forEach(secao => {
+                secao.classList.remove('active');
+            });
+
+            // Mostrar seção desejada
+            document.getElementById(`secao-${nomeSecao}`).classList.add('active');
+
+            // Atualizar progresso
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+            });
+
+            const stepIndex = nomeSecao === 'tamanho' ? 1 : nomeSecao === 'adicionais' ? 2 : 3;
+            document.querySelector(`.step[data-step="${stepIndex}"]`).classList.add('active');
+        }
+
+        function atualizarContadorAdicionais() {
+            document.getElementById('contador-adicionais').textContent = adicionaisSelecionados.length;
+        }
+
+        function atualizarResumoTamanhoModerno() {
+            const container = document.getElementById('resumo-tamanho');
+
+            if (tamanhoSelecionado) {
+                container.innerHTML = `
+            <span class="item-nome">${tamanhoSelecionado.nome}</span>
+            <span class="item-preco">${tamanhoSelecionado.preco_base > 0 ? `+ R$ ${tamanhoSelecionado.preco_base.toFixed(2)}` : 'Incluído'}</span>
+        `;
+            } else {
+                container.innerHTML = '';
+            }
+        }
+
+        function atualizarResumoAdicionaisModerno() {
+            const container = document.getElementById('resumo-adicionais');
+            container.innerHTML = '';
+
+            adicionaisSelecionados.forEach(adicional => {
+                const elemento = document.createElement('div');
+                elemento.className = 'adicional-resumo';
+                elemento.innerHTML = `
+            <span class="item-nome">${adicional.nome}</span>
+            <span class="item-preco">+ R$ ${adicional.preco.toFixed(2)}</span>
+        `;
+                container.appendChild(elemento);
+            });
+        }
+
+        function atualizarTotalModerno() {
+            const precoTamanho = tamanhoSelecionado ? tamanhoSelecionado.preco_base : 0;
+            const totalAdicionais = adicionaisSelecionados.reduce((sum, adicional) => sum + adicional.preco, 0);
+            const totalFinal = precoBaseItem + precoTamanho + totalAdicionais;
+
+            document.getElementById('total-moderno').textContent = `R$ ${totalFinal.toFixed(2)}`;
+
+            // Habilitar/desabilitar botão continuar
+            const btnContinuar = document.getElementById('btn-continuar-moderno');
+            if (btnContinuar) {
+                btnContinuar.disabled = totalFinal <= 0;
+            }
+        }
+
+        function configurarEventListenersModernos() {
+            let secaoAtual = 'tamanho';
+
+            // BOTÃO VOLTAR DO HEADER - CONTROLANDO TUDO
+            document.getElementById('btn-voltar-adicionais').addEventListener('click', function() {
+                if (secaoAtual === 'adicionais') {
+                    // Voltar para tamanhos
+                    secaoAtual = 'tamanho';
+                    mostrarSecao('tamanho');
+                    atualizarBotoesNavegacao();
+                } else {
+                    // Fechar popup completamente e CANCELAR processo
+                    fecharECancelarPopupAdicionais();
+                }
+            });
+
+            // Botão próximo dos tamanhos
+            document.getElementById('btn-proximo-tamanho').addEventListener('click', function() {
+                secaoAtual = 'adicionais';
+                mostrarSecao('adicionais');
+                atualizarBotoesNavegacao();
+            });
+
+            // Botão próximo dos adicionais
+            document.getElementById('btn-proximo-adicionais').addEventListener('click', function() {
+                finalizarPersonalizacao();
+            });
+
+            // Botão finalizar (alternativo)
+            document.getElementById('btn-finalizar-adicionais').addEventListener('click', function() {
+                finalizarPersonalizacao();
+            });
+
+            // Inicializar navegação
+            atualizarBotoesNavegacao();
+        }
+
+        // Função para fechar e cancelar completamente
+        function fecharECancelarPopupAdicionais() {
+            console.log('❌ Cancelando personalização...');
+
+            // Fechar todos os popups relacionados
+            document.getElementById('confirmacao-overlay-adicionais').classList.remove('ativo');
+            document.getElementById('confirmacao-overlay-observacao').classList.remove('ativo');
+
+            // Resetar estado completamente
+            resetarEstadoPopupAdicionais();
+
+            // Limpar formulário de observações
+            const formObservacao = document.getElementById('form-observacao');
+            if (formObservacao) {
+                formObservacao.reset();
+            }
+        }
+
+        function atualizarBotoesNavegacao() {
+            const btnProximoTamanho = document.getElementById('btn-proximo-tamanho');
+            const btnProximoAdicionais = document.getElementById('btn-proximo-adicionais');
+            const btnFinalizar = document.getElementById('btn-finalizar-adicionais');
+
+            // Esconder todos primeiro
+            btnProximoTamanho.style.display = 'none';
+            btnProximoAdicionais.style.display = 'none';
+            btnFinalizar.style.display = 'none';
+
+            // Mostrar o botão correto baseado na seção atual
+            if (document.getElementById('secao-tamanho').classList.contains('active')) {
+                btnProximoTamanho.style.display = 'flex';
+                btnProximoTamanho.disabled = !tamanhoSelecionado;
+            } else if (document.getElementById('secao-adicionais').classList.contains('active')) {
+                // Se há adicionais disponíveis, mostrar botão próximo
+                if (document.getElementById('adicionais-grid-moderno').children.length > 0) {
+                    btnProximoAdicionais.style.display = 'flex';
+                } else {
+                    // Se não há adicionais, mostrar botão finalizar
+                    btnFinalizar.style.display = 'flex';
+                }
+            }
+        }
+
+        function finalizarPersonalizacao() {
+            console.log('✅ Finalizando personalização...');
+            console.log('🍕 Item:', itemAtual);
+            console.log('📏 Tamanho:', tamanhoSelecionado);
+            console.log('➕ Adicionais:', adicionaisSelecionados);
+
+            // Fechar popup de adicionais
+            document.getElementById('confirmacao-overlay-adicionais').classList.remove('ativo');
+
+            // Ir para observações
+            mostrarOverlayObservacaoComAdicionais();
+        }
+
+        function filtrarAdicionais(categoria) {
+            const adicionais = document.querySelectorAll('.adicional-card');
+
+            adicionais.forEach(adicional => {
+                if (categoria === 'todos' || adicional.getAttribute('data-categoria') === categoria) {
+                    adicional.style.display = 'flex';
+                } else {
+                    adicional.style.display = 'none';
+                }
+            });
+        }
+
+        function obterDescricaoTamanhoModerno(nomeTamanho, tipoTamanhos) {
+            const descricoes = {
+                1: { // Pizzas
+                    'Pequena': '4 fatias • 25cm • Ideal para 1 pessoa',
+                    'Média': '6 fatias • 30cm • Ideal para 2-3 pessoas',
+                    'Grande': '8 fatias • 35cm • Ideal para 4-5 pessoas',
+                    'pequena': '4 fatias • 25cm • Ideal para 1 pessoa',
+                    'media': '6 fatias • 30cm • Ideal para 2-3 pessoas',
+                    'grande': '8 fatias • 35cm • Ideal para 4-5 pessoas'
+                },
+                2: { // Bebidas
+                    '350ml': 'Lata/garrafa pequena • Ideal individual',
+                    '500ml': 'Garrafa média • Para compartilhar',
+                    'Garrafa / Jarra': '1,5 Litros • Para o grupo todo'
+                },
+                3: { // Sobremesas
+                    'Média': 'Porção individual • Satisfação garantida',
+                    'Grande': 'Para compartilhar • Momento especial'
+                },
+                4: { // Vinhos
+                    'Garrafa': '1,5 Litros • Harmonização perfeita'
+                }
+            };
+
+            return descricoes[tipoTamanhos]?.[nomeTamanho] || 'Tamanho padrão';
+        }
+
+        // Substituir a função original pela moderna
+        async function mostrarPopupAdicionais(item, tipoIngredientes = 1, tipoTamanhosEspecifico = null) {
+            return await mostrarPopupAdicionaisModerno(item, tipoIngredientes, tipoTamanhosEspecifico);
         }
 
 
@@ -4130,7 +5217,7 @@ include "verifica_login.php";
 
             // Imagem da pizza base doce
             const pizzaBaseImgDoce = new Image();
-            pizzaBaseImgDoce.src = './assets/pizzaBase.svg'; // Você pode criar esta imagem
+            pizzaBaseImgDoce.src = 'assets/pizzaBaseDoce.svg';
 
             // Array para armazenar os ingredientes doces desenhados
             let ingredientesDesenhadosDoce = [];

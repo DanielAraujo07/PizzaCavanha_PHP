@@ -247,7 +247,7 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
 
                             <div class="form-group">
                                 <label for="descricao">Descrição</label>
-                                <textarea class="form-control" id="descricao" name="descricao" rows="3" required></textarea>
+                                <textarea class="form-control" id="descricao" name="descricao" rows="3" required style="height: 130px;"></textarea>
                             </div>
 
                             <div class="form-group">

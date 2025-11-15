@@ -307,10 +307,6 @@ $total_funcionarios = $estatisticas['total_funcionarios'];
                     <span class="stat-number"><?php echo $total_clientes; ?></span>
                     <span class="stat-label">Clientes</span>
                 </div>
-                <div class="stat-card warning">
-                    <span class="stat-number"><?php echo $total_funcionarios; ?></span>
-                    <span class="stat-label">Funcionários</span>
-                </div>
                 <div class="stat-card">
                     <span class="stat-number"><?php echo count($classes); ?></span>
                     <span class="stat-label">Classes de Acesso</span>
