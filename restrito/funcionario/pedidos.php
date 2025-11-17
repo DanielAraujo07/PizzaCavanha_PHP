@@ -122,7 +122,7 @@ if ($result_hoje) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Pedidos</title>
-    <link rel="shortcut icon" href="../assets/funcionario.svg" />
+    <link rel="shortcut icon" href="../assets/funcionario.png" />
 
     <!-- Fontes Oswald, Jaro e Rajdhani -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -163,7 +163,7 @@ if ($result_hoje) {
                 <li><a href="produtos.php"><i class="fas fa-pizza-slice"></i> Produtos</a></li>
                 <li><a href="ingredientes.php"><i class="fas fa-carrot"></i> Ingredientes</a></li>
                 <li><a href="#" class="active"><i class="fas fa-shopping-cart"></i> Pedidos</a></li>
-                <li><a href="categorias.php"><i class="fas fa-tags"></i> Categorias</a></li>
+                <li><a href="categorias.php"><i class="fas fa-tag"></i> Categorias</a></li>
                 <li><a href="usuarios.php"><i class="fas fa-users"></i> Usuários</a></li>
                 <li><a href="relatorios.php"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
                 <li><a href="../index.php"><i class="fas fa-home"></i> Voltar à Home</a></li>

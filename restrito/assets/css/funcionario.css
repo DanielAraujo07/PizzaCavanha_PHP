@@ -371,7 +371,7 @@
             box-shadow: var(--shadow-soft);
             overflow: hidden;
             transition: all 0.3s ease;
-            max-height: 1020px;
+            max-height: 1080px;
             overflow-y: scroll;
         }
 
@@ -600,6 +600,12 @@
             background: linear-gradient(135deg, #95a5a6, #7f8c8d);
             color: white;
             box-shadow: 0 2px 8px rgba(149, 165, 166, 0.3);
+        }
+
+        .status-error {
+            background: linear-gradient(135deg, var(--error-red), #c0392b);
+            color: white;
+            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4);
         }
 
         /* Ações */
@@ -1587,4 +1593,266 @@
         .admin-cards-container {
             display: grid;
             gap: 30px;
+        }
+
+                /* Tabs para produtos/ingredientes */
+        .tabs-container {
+           padding: 20px;
+        }
+        .Circle {
+            width: 5px;
+            height: 5px;
+            background-color: #FFA500;
+            border-radius: 5px;
+        }
+
+        .tabs-header {
+            display: flex;
+            gap: 15px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 1rem 2rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .tab-btn::after {
+            display: none;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-orange);
+            border-color: var(--primary-orange);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--text-light);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* Informações de produto/ingrediente */
+        .produto-info,
+        .ingrediente-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .mini-progress {
+            width: 60px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .mini-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #FFA500, #FFD700);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        /* Badge de destaque */
+        .highlight-badge {
+            background: var(--primary-orange);
+            color: var(--darker-bg);
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+        }
+
+        /* Cards de resumo */
+        .resumo-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .resumo-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            text-align: center;
+        }
+
+        .resumo-card .numero {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-orange);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .resumo-card .label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .tabs-header {
+                flex-direction: column;
+            }
+
+            .tab-btn {
+                padding: 0.8rem 1rem;
+                text-align: center;
+            }
+
+            .resumo-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+                /* Estilos específicos para categorias */
+        .tipos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .tipo-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .tipo-card:hover {
+            border-color: var(--primary-orange);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 165, 0, 0.2);
+        }
+
+        .tipo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .tipo-header h3 {
+            color: var(--primary-orange);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .tipo-categorias {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .categoria-tag {
+            background: rgba(255, 165, 0, 0.1);
+            color: var(--primary-orange);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid rgba(255, 165, 0, 0.3);
+        }
+
+        .produto-count {
+            background: var(--primary-orange);
+            color: var(--darker-bg);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .sem-categorias {
+            color: var(--text-muted);
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .tipo-badge {
+            background: rgba(52, 152, 219, 0.2);
+            color: var(--accent-blue);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .produto-count-badge {
+            background: rgba(39, 174, 96, 0.2);
+            color: var(--success-green);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid rgba(39, 174, 96, 0.3);
+        }
+
+        .sem-produtos {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        .badge {
+            background: var(--primary-orange);
+            color: var(--darker-bg);
+            padding: 0.3rem 0.7rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .form-text {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .tipos-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tipo-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .categoria-tag {
+                font-size: 0.8rem;
+            }
         }

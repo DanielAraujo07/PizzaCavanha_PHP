@@ -10,7 +10,13 @@ if ($_SESSION['class_nivel'] < 2) {
 
 // Processar filtros
 $data_inicio = isset($_GET['data_inicio']) ? $_GET['data_inicio'] : date('Y-m-01');
-$data_fim = isset($_GET['data_fim']) ? $_GET['data_fim'] : date('Y-m-d');
+$data_fim = isset($_GET['data_fim']) ? $_GET['data_fim'] : '';
+
+// Se data_fim estiver vazia, usar data atual
+if (empty($data_fim)) {
+    $data_fim = date('Y-m-d');
+}
+
 $filtro_estado = isset($_GET['estado']) ? intval($_GET['estado']) : '';
 
 // Buscar dados para os cards
@@ -34,6 +40,17 @@ mysqli_stmt_bind_param($stmt, "ss", $data_inicio, $data_fim);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $clientes_ativos = mysqli_fetch_assoc($result)['total'] ?? 0;
+
+// NOVO: Funcionários ativos (usuários com nível > 1 que fizeram login recentemente)
+$sql_funcionarios_ativos = "SELECT COUNT(DISTINCT u.id) as total 
+                           FROM users u 
+                           WHERE u.class_id > 1 
+                           AND u.id IN (SELECT DISTINCT id_cliente FROM pedido WHERE DATE(horario) BETWEEN ? AND ?)";
+$stmt = mysqli_prepare($conn, $sql_funcionarios_ativos);
+mysqli_stmt_bind_param($stmt, "ss", $data_inicio, $data_fim);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$funcionarios_ativos = mysqli_fetch_assoc($result)['total'] ?? 0;
 
 $sql_ticket_medio = "SELECT AVG(valor) as medio FROM pedido WHERE DATE(horario) BETWEEN ? AND ?";
 $stmt = mysqli_prepare($conn, $sql_ticket_medio);
@@ -88,6 +105,30 @@ mysqli_stmt_execute($stmt);
 $result_populares = mysqli_stmt_get_result($stmt);
 $produtos_populares = mysqli_fetch_all($result_populares, MYSQLI_ASSOC);
 
+// NOVO: Ingredientes mais utilizados (adicionais + pizzas personalizadas)
+$sql_ingredientes_populares = "
+    SELECT 
+        ing.nome,
+        COUNT(ii.id_ingrediente) as quantidade_utilizada,
+        SUM(ing.preco) as total_gerado,
+        COUNT(DISTINCT pi.id_pedido) as pedidos_com_ingrediente
+    FROM ingredientes_itens ii
+    LEFT JOIN ingredientes ing ON ii.id_ingrediente = ing.id
+    LEFT JOIN itens i ON ii.id_item = i.id
+    LEFT JOIN pedido_itens pi ON i.id = pi.id_item
+    LEFT JOIN pedido p ON pi.id_pedido = p.id
+    WHERE DATE(p.horario) BETWEEN ? AND ?
+    GROUP BY ing.id, ing.nome
+    ORDER BY quantidade_utilizada DESC
+    LIMIT 10
+";
+
+$stmt = mysqli_prepare($conn, $sql_ingredientes_populares);
+mysqli_stmt_bind_param($stmt, "ss", $data_inicio, $data_fim);
+mysqli_stmt_execute($stmt);
+$result_ingredientes = mysqli_stmt_get_result($stmt);
+$ingredientes_populares = mysqli_fetch_all($result_ingredientes, MYSQLI_ASSOC);
+
 // Buscar vendas por dia (para gráfico)
 $sql_vendas_dia = "
     SELECT DATE(horario) as data, COUNT(*) as pedidos, SUM(valor) as total
@@ -110,8 +151,8 @@ $vendas_por_dia = mysqli_fetch_all($result_vendas_dia, MYSQLI_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatórios - Pizza do Cavanha</title>
-    <link rel="shortcut icon" href="../assets/funcionario.svg" />
+    <title>Relatórios</title>
+    <link rel="shortcut icon" href="../assets/funcionario.png" />
 
     <!-- Fontes Oswald, Jaro e Rajdhani -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -156,7 +197,7 @@ $vendas_por_dia = mysqli_fetch_all($result_vendas_dia, MYSQLI_ASSOC);
                 <li><a href="produtos.php"><i class="fas fa-pizza-slice"></i> Produtos</a></li>
                 <li><a href="ingredientes.php"><i class="fas fa-carrot"></i> Ingredientes</a></li>
                 <li><a href="pedidos.php"><i class="fas fa-shopping-cart"></i> Pedidos</a></li>
-                <li><a href="categorias.php"><i class="fas fa-tags"></i> Categorias</a></li>
+                <li><a href="categorias.php"><i class="fas fa-tag"></i> Categorias</a></li>
                 <li><a href="usuarios.php"><i class="fas fa-users"></i> Usuários</a></li>
                 <li><a href="#" class="active"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
                 <li><a href="../index.php"><i class="fas fa-home"></i> Voltar à Home</a></li>
@@ -227,6 +268,10 @@ $vendas_por_dia = mysqli_fetch_all($result_vendas_dia, MYSQLI_ASSOC);
                     <span class="stat-number"><?php echo $clientes_ativos; ?></span>
                     <span class="stat-label">Clientes Ativos</span>
                 </div>
+                <div class="stat-card warning">
+                    <span class="stat-number"><?php echo $funcionarios_ativos; ?></span>
+                    <span class="stat-label">Funcionários Ativos</span>
+                </div>
                 <div class="stat-card">
                     <span class="stat-number">R$ <?php echo number_format($ticket_medio, 2, ',', '.'); ?></span>
                     <span class="stat-label">Ticket Médio</span>
@@ -240,48 +285,114 @@ $vendas_por_dia = mysqli_fetch_all($result_vendas_dia, MYSQLI_ASSOC);
                             <h2><i class="fas fa-chart-line"></i> Vendas por Período</h2>
                         </div>
                         <div class="section-content">
-                            <div class="chart-container">
+                            <div class="chart-container" style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 800px;">
                                 <canvas id="vendasChart" height="300"></canvas>
                             </div>
                         </div>
                     </section>
 
-                    <!-- Produtos Mais Vendidos -->
+                    <!-- Produtos e Ingredientes Mais Vendidos -->
                     <section class="section-card">
-                        <div class="section-header">
-                            <h2><i class="fas fa-star"></i> Produtos Mais Vendidos</h2>
+                        <div class="section-header" style="display: flex; flex-direction: row; justify-content: space-between; padding: 11px 22px 11px 22px;">
+                            <h2><i class="fas fa-star"></i>Produtos e Ingredientes Favoritos</h2>
+                            <div class="tabs-header">
+                                <button class="tab-btn active" data-tab="produtos"><i class="fas fa-pizza-slice"></i></button>
+                                <button class="tab-btn" data-tab="ingredientes"><i class="fas fa-carrot"></i></button>
+                            </div>
                         </div>
-                        <div class="section-content">
-                            <div class="table-container">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Produto</th>
-                                            <th>Quantidade</th>
-                                            <th>Total Vendido</th>
-                                            <th>Percentual</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php
-                                        $total_geral = array_sum(array_column($produtos_populares, 'total'));
-                                        foreach ($produtos_populares as $produto):
-                                            $percentual = $total_geral > 0 ? ($produto['total'] / $total_geral) * 100 : 0;
-                                        ?>
+
+                        <div class="tabs-container">
+                            <div class="tab-content active" id="tab-produtos">
+                                <div class="table-container">
+                                    <table>
+                                        <thead>
                                             <tr>
-                                                <td><?php echo htmlspecialchars($produto['nome']); ?></td>
-                                                <td><?php echo $produto['quantidade']; ?></td>
-                                                <td>R$ <?php echo number_format($produto['total'], 2, ',', '.'); ?></td>
-                                                <td>
-                                                    <div class="progress-bar-container">
-                                                        <div class="progress-bar" style="width: <?php echo $percentual; ?>%"></div>
-                                                        <span class="progress-text"><?php echo number_format($percentual, 1); ?>%</span>
-                                                    </div>
-                                                </td>
+                                                <th>Produto</th>
+                                                <th>Quantidade</th>
+                                                <th>Total Vendido</th>
+                                                <th>Percentual</th>
                                             </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            <?php
+                                            $total_geral_produtos = array_sum(array_column($produtos_populares, 'total'));
+                                            foreach ($produtos_populares as $produto):
+                                                $percentual = $total_geral_produtos > 0 ? ($produto['total'] / $total_geral_produtos) * 100 : 0;
+                                            ?>
+                                                <tr>
+                                                    <td>
+                                                        <div class="produto-info">
+                                                            <strong><?php echo htmlspecialchars($produto['nome']); ?></strong>
+                                                        </div>
+                                                    </td>
+                                                    <td><?php echo $produto['quantidade']; ?> un.</td>
+                                                    <td>R$ <?php echo number_format($produto['total'], 2, ',', '.'); ?></td>
+                                                    <td>
+                                                        <div class="progress-bar-container">
+                                                            <div class="progress-bar" style="width: <?php echo $percentual; ?>%"></div>
+                                                            <span class="progress-text"><?php echo number_format($percentual, 1); ?>%</span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+
+                                            <?php if (empty($produtos_populares)): ?>
+                                                <tr>
+                                                    <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                                        Nenhum produto vendido no período
+                                                    </td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="tab-content" id="tab-ingredientes">
+                                <div class="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Ingrediente</th>
+                                                <th>Vezes Utilizado</th>
+                                                <th>Pedidos com Ingrediente</th>
+                                                <th>Total Gerado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php
+                                            $total_geral_ingredientes = array_sum(array_column($ingredientes_populares, 'total_gerado'));
+                                            foreach ($ingredientes_populares as $ingrediente):
+                                                $percentual_uso = $ingredientes_populares[0]['quantidade_utilizada'] > 0 ?
+                                                    ($ingrediente['quantidade_utilizada'] / $ingredientes_populares[0]['quantidade_utilizada']) * 100 : 0;
+                                            ?>
+                                                <tr>
+                                                    <td>
+                                                        <div class="ingrediente-info">
+                                                            <strong><?php echo htmlspecialchars($ingrediente['nome']); ?></strong>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <?php echo $ingrediente['quantidade_utilizada']; ?>x
+                                                        <div class="mini-progress">
+                                                            <div class="mini-progress-bar" style="width: <?php echo $percentual_uso; ?>%"></div>
+                                                        </div>
+                                                    </td>
+                                                    <td><?php echo $ingrediente['pedidos_com_ingrediente']; ?> pedidos</td>
+                                                    <td>R$ <?php echo number_format($ingrediente['total_gerado'], 2, ',', '.'); ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+
+                                            <?php if (empty($ingredientes_populares)): ?>
+                                                <tr>
+                                                    <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                                        Nenhum ingrediente utilizado no período
+                                                    </td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -289,7 +400,7 @@ $vendas_por_dia = mysqli_fetch_all($result_vendas_dia, MYSQLI_ASSOC);
 
                 <!-- Últimos Pedidos -->
                 <section class="section-card">
-                    <div class="section-header">
+                    <div class="section-header" style="display: flex; flex-direction: row; gap: 15px;">
                         <h2><i class="fas fa-history"></i> Últimos Pedidos</h2>
                         <span class="badge"><?php echo count($pedidos); ?> pedidos</span>
                     </div>
@@ -500,6 +611,36 @@ $vendas_por_dia = mysqli_fetch_all($result_vendas_dia, MYSQLI_ASSOC);
 
         // Ativar menu atual
         document.addEventListener('DOMContentLoaded', function() {
+            const currentPage = window.location.pathname.split('/').pop();
+            const menuLinks = document.querySelectorAll('.admin-menu a');
+
+            menuLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPage) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Sistema de Tabs para Produtos/Ingredientes
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+
+                    // Remover classe active de todos os botões e conteúdos
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+
+                    // Adicionar classe active ao botão e conteúdo clicado
+                    this.classList.add('active');
+                    document.getElementById(`tab-${targetTab}`).classList.add('active');
+                });
+            });
+
+            // Ativar menu atual
             const currentPage = window.location.pathname.split('/').pop();
             const menuLinks = document.querySelectorAll('.admin-menu a');
 
