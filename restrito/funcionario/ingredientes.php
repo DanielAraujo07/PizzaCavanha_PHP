@@ -13,6 +13,7 @@ $mensagem = '';
 $tipo_mensagem = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Adicionar ingrediente
     if (isset($_POST['adicionar_ingrediente'])) {
         $nome = mysqli_real_escape_string($conn, $_POST['nome']);
         $preco = floatval($_POST['preco']);
@@ -26,6 +27,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_bind_param($stmt, "sdsii", $nome, $preco, $imagem, $tipo_id, $disponivel);
         
         if (mysqli_stmt_execute($stmt)) {
+            $novo_id = mysqli_insert_id($conn);
+            
+            // REGISTRAR LOG DE ADICIONAR
+            $dados_novos = [
+                'nome' => $nome,
+                'preco' => $preco,
+                'imagem' => $imagem,
+                'tipo_id' => $tipo_id,
+                'disponivel' => $disponivel
+            ];
+            registrarLog($conn, 'ingredientes', $novo_id, 'INSERT', null, formatarDadosParaLog($dados_novos));
+            
             $mensagem = "Ingrediente adicionado com sucesso!";
             $tipo_mensagem = "success";
         } else {
@@ -37,6 +50,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Atualizar ingrediente
     if (isset($_POST['atualizar_ingrediente'])) {
         $id = intval($_POST['id']);
+        
+        // Buscar dados antigos antes da atualização
+        $sql_antigo = "SELECT nome, preco, imagem, tipo_id, disponivel FROM ingredientes WHERE id = ?";
+        $stmt_antigo = mysqli_prepare($conn, $sql_antigo);
+        mysqli_stmt_bind_param($stmt_antigo, "i", $id);
+        mysqli_stmt_execute($stmt_antigo);
+        $result_antigo = mysqli_stmt_get_result($stmt_antigo);
+        $dados_antigos = mysqli_fetch_assoc($result_antigo);
+
         $nome = mysqli_real_escape_string($conn, $_POST['nome']);
         $preco = floatval($_POST['preco']);
         $imagem = mysqli_real_escape_string($conn, $_POST['imagem']);
@@ -48,6 +70,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_bind_param($stmt, "sdsiii", $nome, $preco, $imagem, $tipo_id, $disponivel, $id);
         
         if (mysqli_stmt_execute($stmt)) {
+            // REGISTRAR LOG DE ATUALIZAÇÃO
+            $dados_novos = [
+                'nome' => $nome,
+                'preco' => $preco,
+                'imagem' => $imagem,
+                'tipo_id' => $tipo_id,
+                'disponivel' => $disponivel
+            ];
+            registrarLog($conn, 'ingredientes', $id, 'UPDATE', formatarDadosParaLog($dados_antigos), formatarDadosParaLog($dados_novos));
+            
             $mensagem = "Ingrediente atualizado com sucesso!";
             $tipo_mensagem = "success";
         } else {
@@ -60,11 +92,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['excluir_ingrediente'])) {
         $id = intval($_POST['id']);
         
+        // Buscar dados antigos para o log
+        $sql_antigo = "SELECT nome, preco, imagem, tipo_id, disponivel FROM ingredientes WHERE id = ?";
+        $stmt_antigo = mysqli_prepare($conn, $sql_antigo);
+        mysqli_stmt_bind_param($stmt_antigo, "i", $id);
+        mysqli_stmt_execute($stmt_antigo);
+        $result_antigo = mysqli_stmt_get_result($stmt_antigo);
+        $dados_antigos = mysqli_fetch_assoc($result_antigo);
+        
         $sql = "DELETE FROM ingredientes WHERE id = ?";
         $stmt = mysqli_prepare($conn, $sql);
         mysqli_stmt_bind_param($stmt, "i", $id);
         
         if (mysqli_stmt_execute($stmt)) {
+            // REGISTRAR LOG DE EXCLUSÃO
+            registrarLog($conn, 'ingredientes', $id, 'DELETE', formatarDadosParaLog($dados_antigos), null);
+            
             $mensagem = "Ingrediente excluído com sucesso!";
             $tipo_mensagem = "success";
         } else {
@@ -83,12 +126,24 @@ $sql_ingredientes = "SELECT i.*, t.nome as tipo_nome
                      LEFT JOIN tipos_categoria t ON i.tipo_id = t.id 
                      WHERE 1=1";
 
+$params = [];
+$types = '';
+
 if (!empty($busca)) {
-    $sql_ingredientes .= " AND i.nome LIKE '%$busca%'";
+    $sql_ingredientes .= " AND i.nome LIKE ?";
+    $params[] = "%$busca%";
+    $types .= 's';
 }
 
 if (!empty($filtro_tipo)) {
-    $sql_ingredientes .= " AND i.tipo_id = $filtro_tipo";
+    $sql_ingredientes .= " AND i.tipo_id = ?";
+    $params[] = $filtro_tipo;
+    $types .= 'i';
+}
+
+$stmt = mysqli_prepare($conn, $sql_ingredientes);
+if (!empty($params)) {
+    mysqli_stmt_bind_param($stmt, $types, ...$params);
 }
 
 $sql_ingredientes .= " ORDER BY i.nome";
@@ -156,6 +211,7 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
                 <li><a href="categorias.php"><i class="fas fa-tag"></i> Categorias</a></li>
                 <li><a href="usuarios.php"><i class="fas fa-users"></i> Usuários</a></li>
                 <li><a href="relatorios.php"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+                <li><a href="logs_auditoria.php"><i class="fas fa-clipboard-list"></i> Logs de Auditoria</a></li>
                 <li><a href="../index.php"><i class="fas fa-home"></i> Voltar à Home</a></li>
             </ul>
         </aside>

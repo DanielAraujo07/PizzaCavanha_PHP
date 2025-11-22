@@ -60,6 +60,7 @@ if ($_SESSION['class_nivel'] == 1) {
                 <li><a href="categorias.php"><i class="fas fa-tag"></i> Categorias</a></li>
                 <li><a href="usuarios.php"><i class="fas fa-users"></i> Usuários</a></li>
                 <li><a href="relatorios.php"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+                <li><a href="logs_auditoria.php"><i class="fas fa-clipboard-list"></i> Logs de Auditoria</a></li>               
                 <li><a href="../index.php"><i class="fas fa-home"></i> Voltar à Home</a></li>
             </ul>
         </aside>

@@ -34,6 +34,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mysqli_stmt_bind_param($stmt, "si", $nome, $tipo_id);
 
             if (mysqli_stmt_execute($stmt)) {
+                $novo_id = mysqli_insert_id($conn);
+        
+                // REGISTRAR LOG DE ADICIONAR
+                $dados_novos = ['nome' => $nome, 'tipo_id' => $tipo_id];
+                registrarLog($conn, 'categorias', $novo_id, 'INSERT', null, formatarDadosParaLog($dados_novos));
+
                 $mensagem = "Categoria adicionada com sucesso!";
                 $tipo_mensagem = "success";
             } else {
@@ -49,11 +55,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nome = mysqli_real_escape_string($conn, $_POST['nome']);
         $tipo_id = intval($_POST['tipo_id']);
 
+        // Buscar dados atuais antes da atualização
+        $sql_antigo = "SELECT nome, tipo_id FROM categorias WHERE id = ?";
+        $stmt_antigo = mysqli_prepare($conn, $sql_antigo);
+        mysqli_stmt_bind_param($stmt_antigo, "i", $id);
+        mysqli_stmt_execute($stmt_antigo);
+        $result_antigo = mysqli_stmt_get_result($stmt_antigo);
+        $dados_antigos = mysqli_fetch_assoc($result_antigo);
+
         $sql = "UPDATE categorias SET nome = ?, tipo_id = ? WHERE id = ?";
         $stmt = mysqli_prepare($conn, $sql);
         mysqli_stmt_bind_param($stmt, "sii", $nome, $tipo_id, $id);
 
         if (mysqli_stmt_execute($stmt)) {
+            // REGISTRAR LOG DE ATUALIZAÇÃO
+            $dados_novos = ['nome' => $nome, 'tipo_id' => $tipo_id];
+            registrarLog($conn, 'categorias', $id, 'UPDATE', formatarDadosParaLog($dados_antigos), formatarDadosParaLog($dados_novos));
+        
             $mensagem = "Categoria atualizada com sucesso!";
             $tipo_mensagem = "success";
         } else {
@@ -66,16 +84,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['excluir_categoria'])) {
         $id = intval($_POST['id']);
 
+        // Buscar dados antigos para o log
+        $sql_antigo = "SELECT nome, tipo_id FROM categorias WHERE id = ?";
+        $stmt_antigo = mysqli_prepare($conn, $sql_antigo);
+        mysqli_stmt_bind_param($stmt_antigo, "i", $id);
+        mysqli_stmt_execute($stmt_antigo);
+        $result_antigo = mysqli_stmt_get_result($stmt_antigo);
+        $dados_antigos = mysqli_fetch_assoc($result_antigo);
+
         // Verificar se há produtos usando esta categoria
-        $check_sql = "SELECT COUNT(*) as total FROM produtos WHERE id_categoria = ?";
-        $check_stmt = mysqli_prepare($conn, $check_sql);
-        mysqli_stmt_bind_param($check_stmt, "i", $id);
-        mysqli_stmt_execute($check_stmt);
-        $result = mysqli_stmt_get_result($check_stmt);
-        $count = mysqli_fetch_assoc($result)['total'];
+        $sql_check = "SELECT COUNT(*) as total FROM produtos WHERE id_categoria = ?";
+        $stmt_check = mysqli_prepare($conn, $sql_check);
+        mysqli_stmt_bind_param($stmt_check, "i", $id);
+        mysqli_stmt_execute($stmt_check);
+        $result_check = mysqli_stmt_get_result($stmt_check);
+        $count_data = mysqli_fetch_assoc($result_check);
+        $count = $count_data['total'];
 
         if ($count > 0) {
-            $mensagem = "Não é possível excluir esta categoria pois existem produtos vinculados a ela!";
+            $mensagem = "Não é possível excluir esta categoria pois existem $count produto(s) vinculado(s)!";
             $tipo_mensagem = "error";
         } else {
             $sql = "DELETE FROM categorias WHERE id = ?";
@@ -83,6 +110,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mysqli_stmt_bind_param($stmt, "i", $id);
 
             if (mysqli_stmt_execute($stmt)) {
+                // REGISTRAR LOG DE EXCLUIR
+                registrarLog($conn, 'categorias', $id, 'DELETE', formatarDadosParaLog($dados_antigos), null);
+
                 $mensagem = "Categoria excluída com sucesso!";
                 $tipo_mensagem = "success";
             } else {
@@ -172,6 +202,7 @@ $tipos_ativos = count(array_unique(array_column($categorias, 'tipo_id')));
                 <li><a href="#" class="active"><i class="fas fa-tag"></i> Categorias</a></li>
                 <li><a href="usuarios.php"><i class="fas fa-users"></i> Usuários</a></li>
                 <li><a href="relatorios.php"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+                <li><a href="logs_auditoria.php"><i class="fas fa-clipboard-list"></i> Logs de Auditoria</a></li>
                 <li><a href="../index.php"><i class="fas fa-home"></i> Voltar à Home</a></li>
             </ul>
         </aside>

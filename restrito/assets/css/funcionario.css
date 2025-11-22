@@ -1856,3 +1856,46 @@
                 font-size: 0.8rem;
             }
         }
+
+        /* Estilos para logs de auditoria */
+.log-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.detail-row {
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.detail-row strong {
+    min-width: 150px;
+    color: var(--primary-orange);
+}
+
+.detail-section {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+}
+
+.detail-section h3 {
+    color: var(--primary-orange);
+    margin-bottom: 0.5rem;
+}
+
+.log-data {
+    background: var(--darker-bg);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--card-border);
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}

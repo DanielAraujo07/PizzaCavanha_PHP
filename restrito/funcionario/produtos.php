@@ -13,6 +13,7 @@ $mensagem = '';
 $tipo_mensagem = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Adicionar produto
     if (isset($_POST['adicionar_produto'])) {
         $nome = mysqli_real_escape_string($conn, $_POST['nome']);
         $descricao = mysqli_real_escape_string($conn, $_POST['descricao']);
@@ -27,6 +28,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_bind_param($stmt, "ssdsii", $nome, $descricao, $preco, $imagem, $id_categoria, $disponivel);
         
         if (mysqli_stmt_execute($stmt)) {
+            $novo_id = mysqli_insert_id($conn);
+            
+            // REGISTRAR LOG DE ADICIONAR
+            $dados_novos = [
+                'nome' => $nome, 
+                'descricao' => $descricao,
+                'preco' => $preco,
+                'imagem' => $imagem,
+                'id_categoria' => $id_categoria,
+                'disponivel' => $disponivel
+            ];
+            registrarLog($conn, 'produtos', $novo_id, 'INSERT', null, formatarDadosParaLog($dados_novos));
+            
             $mensagem = "Produto adicionado com sucesso!";
             $tipo_mensagem = "success";
         } else {
@@ -38,6 +52,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Atualizar produto
     if (isset($_POST['atualizar_produto'])) {
         $id = intval($_POST['id']);
+        
+        // Buscar dados antigos antes da atualização
+        $sql_antigo = "SELECT nome, descricao, preco, imagem, id_categoria, disponivel FROM produtos WHERE id = ?";
+        $stmt_antigo = mysqli_prepare($conn, $sql_antigo);
+        mysqli_stmt_bind_param($stmt_antigo, "i", $id);
+        mysqli_stmt_execute($stmt_antigo);
+        $result_antigo = mysqli_stmt_get_result($stmt_antigo);
+        $dados_antigos = mysqli_fetch_assoc($result_antigo);
+
         $nome = mysqli_real_escape_string($conn, $_POST['nome']);
         $descricao = mysqli_real_escape_string($conn, $_POST['descricao']);
         $preco = floatval($_POST['preco']);
@@ -50,6 +73,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_bind_param($stmt, "ssdsiii", $nome, $descricao, $preco, $imagem, $id_categoria, $disponivel, $id);
         
         if (mysqli_stmt_execute($stmt)) {
+            // REGISTRAR LOG DE ATUALIZAÇÃO
+            $dados_novos = [
+                'nome' => $nome, 
+                'descricao' => $descricao,
+                'preco' => $preco,
+                'imagem' => $imagem,
+                'id_categoria' => $id_categoria,
+                'disponivel' => $disponivel
+            ];
+            registrarLog($conn, 'produtos', $id, 'UPDATE', formatarDadosParaLog($dados_antigos), formatarDadosParaLog($dados_novos));
+            
             $mensagem = "Produto atualizado com sucesso!";
             $tipo_mensagem = "success";
         } else {
@@ -62,11 +96,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['excluir_produto'])) {
         $id = intval($_POST['id']);
         
+        // Buscar dados antigos para o log
+        $sql_antigo = "SELECT nome, descricao, preco, imagem, id_categoria, disponivel FROM produtos WHERE id = ?";
+        $stmt_antigo = mysqli_prepare($conn, $sql_antigo);
+        mysqli_stmt_bind_param($stmt_antigo, "i", $id);
+        mysqli_stmt_execute($stmt_antigo);
+        $result_antigo = mysqli_stmt_get_result($stmt_antigo);
+        $dados_antigos = mysqli_fetch_assoc($result_antigo);
+        
         $sql = "DELETE FROM produtos WHERE id = ?";
         $stmt = mysqli_prepare($conn, $sql);
         mysqli_stmt_bind_param($stmt, "i", $id);
         
         if (mysqli_stmt_execute($stmt)) {
+            // REGISTRAR LOG DE EXCLUSÃO
+            registrarLog($conn, 'produtos', $id, 'DELETE', formatarDadosParaLog($dados_antigos), null);
+            
             $mensagem = "Produto excluído com sucesso!";
             $tipo_mensagem = "success";
         } else {
@@ -151,7 +196,6 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
     <div class="admin-container">
         <aside class="admin-sidebar">
             <ul class="admin-menu">
-            <ul class="admin-menu">
                 <li><a href="index.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                 <li><a href="#" class="active"><i class="fas fa-pizza-slice"></i> Produtos</a></li>
                 <li><a href="ingredientes.php"><i class="fas fa-carrot"></i> Ingredientes</a></li>
@@ -159,6 +203,7 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
                 <li><a href="categorias.php"><i class="fas fa-tag"></i> Categorias</a></li>
                 <li><a href="usuarios.php"><i class="fas fa-users"></i> Usuários</a></li>
                 <li><a href="relatorios.php"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+                <li><a href="logs_auditoria.php"><i class="fas fa-clipboard-list"></i> Logs de Auditoria</a></li>
                 <li><a href="../index.php"><i class="fas fa-home"></i> Voltar à Home</a></li>
             </ul>
         </aside>

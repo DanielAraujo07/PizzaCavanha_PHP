@@ -9,10 +9,9 @@
 	$pass = "MyC4stl3T0wn_BEST!";
 	$bd = "pizzacavanha";
 
-
-
 	if ( $conn = mysqli_connect($server, $user, $pass, $bd) ) {
-		// echo "Conectado!";
+		// Definir charset para UTF-8
+		mysqli_set_charset($conn, "utf8mb4");
 	} else 
 		die("Erro de conexão: " . mysqli_connect_error());
 
@@ -41,4 +40,28 @@ if (!function_exists('mostra_data')) {
         return $escreve;
     }
 }
- ?>
+
+// Função para registrar logs de auditoria - VERIFICAR SE JÁ EXISTE
+if (!function_exists('registrarLog')) {
+    function registrarLog($conn, $tabela, $id_registro, $acao, $dados_anteriores = null, $dados_novos = null) {
+        $id_usuario = $_SESSION['id'] ?? 0;
+        $ip_usuario = $_SERVER['REMOTE_ADDR'] ?? 'DESCONHECIDO';
+        $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'DESCONHECIDO';
+        
+        $sql = "INSERT INTO logs_auditoria (tabela_afetada, id_registro, acao, dados_anteriores, dados_novos, id_usuario, ip_usuario, user_agent) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param($stmt, "sissiiss", $tabela, $id_registro, $acao, $dados_anteriores, $dados_novos, $id_usuario, $ip_usuario, $user_agent);
+        
+        return mysqli_stmt_execute($stmt);
+    }
+}
+
+// Função para obter dados formatados para log
+if (!function_exists('formatarDadosParaLog')) {
+    function formatarDadosParaLog($dados) {
+        return json_encode($dados, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    }
+}
+?>
