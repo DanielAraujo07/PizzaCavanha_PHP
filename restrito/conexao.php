@@ -61,7 +61,23 @@ if (!function_exists('registrarLog')) {
 // Função para obter dados formatados para log
 if (!function_exists('formatarDadosParaLog')) {
     function formatarDadosParaLog($dados) {
-        return json_encode($dados, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        if ($dados === null) {
+            return null;
+        }
+        
+        // Se já for uma string (JSON), retorna como está
+        if (is_string($dados)) {
+            return $dados;
+        }
+        
+        // Se for array, converte para JSON
+        if (is_array($dados)) {
+            return json_encode($dados, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        }
+        
+        // Se for outro tipo, converte para string
+        return (string)$dados;
     }
 }
+
 ?>

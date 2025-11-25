@@ -121,6 +121,23 @@ CREATE TABLE tamanhos (
     FOREIGN KEY (tipo_id) REFERENCES tipos_produtos(id)
 );
 
+CREATE TABLE logs_auditoria (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tabela_afetada VARCHAR(50) NOT NULL,
+    id_registro INT NOT NULL,
+    acao ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
+    dados_anteriores TEXT,
+    dados_novos TEXT,
+    id_usuario INT NOT NULL,
+    data_hora TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ip_usuario VARCHAR(45),
+    user_agent VARCHAR(255),
+    
+    FOREIGN KEY (id_usuario) REFERENCES users(id)
+);
+
+SELECT * FROM ingredientes;
+
 -- INSERT INTOs
     INSERT INTO user_classes (nome, nivel) VALUES
         ('Cliente', 1),
@@ -130,24 +147,19 @@ CREATE TABLE tamanhos (
         ('Financeiro', 5),
         ('Admin', 6);
     INSERT INTO users (nome, senha, email, telefone, class_id) VALUES
-		('User001', SHA2('senha', 512), 'user@email.com', '(11) 11111-1111', 1),
-		('User002', SHA2('senha2', 512), 'user2@email.com', '(11) 11111-1111', 1),
-		('User003', SHA2('senha3', 512), 'user3@email.com', '(11) 11111-1111', 1),
-        ('Atendente001', SHA2('senha', 512), 'atendente@email.com', '(22) 22222-2222', 2),
-        ('Entregador001', SHA2('senha', 512), 'entregador@email.com', '(33) 33333-3333', 3),
-        ('Cozinheiro001', SHA2('senha', 512), 'cozinheiro@email.com', '(44) 44444-4444', 4),
-        ('Financeiro001', SHA2('senha', 512), 'financeiro@email.com', '(55) 55555-5555', 5),
-        ('Admin001', SHA2('admin', 512), 'admin@email.com', '(00) 00000-0000', 6);
+        ('Daniel Araújo', SHA2('senha', 512), 'daniel@email.com', '(00) 00000-0000', 6);
 	INSERT INTO tipos_categoria (nome) VALUES
-		('Salgado'),
-        ('Doce'),
-        ('Bebida');
+		('Comida Salgada'),
+        ('Comida Doce'),
+        ('Bebidas Padrão'),
+        ('Bebidas Especiais');
     INSERT INTO categorias (tipo_id, nome) VALUES
-		(1, 'salgadas'),
-		(2, 'doces'),
-		(1, 'vegetarianas'),
-		(3, 'bebidas'),
-		(2, 'sobremesas');
+		(1, 'Pizzas Salgadas'),
+		(2, 'Pizzas Doces'),
+		(1, 'Pizzas Vegetarianas'),
+		(3, 'Bebidas'),
+        (4, 'Bebidas Especiais'),
+		(2, 'Sobremesas');
     INSERT INTO tipos_produtos (nome) VALUES
 		('Pizzas'),
 		('Bebidas'),
@@ -158,16 +170,16 @@ CREATE TABLE tamanhos (
 		('Pizza Personalizada Salgada', 'Monte a sua própria pizza, do zero. Uma pizza com a sua cara!', '20.00', 'https://images.pexels.com/photos/1093015/pexels-photo-1093015.jpeg', 1, 1),
         ('Pizza Personalizada Doce', 'Monte a sua pizza doce, do zero. Sempre sobra espaço pra um docinho né?', '30.00', 'https://cdn.pixabay.com/photo/2020/01/04/18/10/pizza-4741311_960_720.jpg', 2, 2),
         -- Pizzas Padrão
-		('Margherita', 'Molho de Tomate, Mussarela e Manjericão', 35.00, 'https://grandecheese.com/wp-content/uploads/2025/02/Margherita-Pizza-deck-oven.jpg.webp', 1, 1),
+		('Margherita', 'Molho de Tomate, Mussarela, Tomate e Manjericão', 35.00, 'https://grandecheese.com/wp-content/uploads/2025/02/Margherita-Pizza-deck-oven.jpg.webp', 1, 1),
 		('Pepperoni', 'Molho de Tomate, Mussarela e Pepperoni', 40.00, 'https://www.seara.com.br/wp-content/uploads/2025/09/pizza-de-pepperoni-caseira-portal-minha-receita.jpg', 1, 1),
-		('Calabresa', 'Molho de Tomate, Mussarela, Calabresa e Cebola', 38.00, 'https://www.sabornamesa.com.br/media/k2/items/cache/513d7a0ab11e38f7bd117d760146fed3_XL.jpg', 1, 1),
-		('Frango com Catupiry', 'Molho de Tomate, Frango Desfiado e Catupiry', 45.00, 'https://guiadacozinha.com.br/wp-content/uploads/2007/01/pizza-de-frango-e-milho.jpg', 1, 1),
-		('Portuguesa', 'Molho de Tomate, Presunto, Ovos, Cebola, Azeitonas e Mussarela', 42.00, 'https://www.ogastronomo.com.br/upload/389528334-curiosidades-sobre-a-pizza-portuguesa.jpg', 1, 1),
+		('Calabresa', 'Molho de Tomate, Mussarela, Calabresa, Cebola e Azeitonas', 38.00, 'https://www.sabornamesa.com.br/media/k2/items/cache/513d7a0ab11e38f7bd117d760146fed3_XL.jpg', 1, 1),
+		('Frango com Catupiry', 'Molho de Tomate, Mussarela, Frango Desfiado e Catupiry', 45.00, 'https://guiadacozinha.com.br/wp-content/uploads/2007/01/pizza-de-frango-e-milho.jpg', 1, 1),
+		('Portuguesa', 'Molho de Tomate, Presunto, Ovos, Pepperoni, Ervilhas, Cebola, Azeitonas e Mussarela', 42.00, 'https://www.ogastronomo.com.br/upload/389528334-curiosidades-sobre-a-pizza-portuguesa.jpg', 1, 1),
         -- Pizzas Doces
 		('Chocolate com Morango', 'Chocolate ao Leite e Morangos Frescos', 48.00, 'https://s2.glbimg.com/qyb1vGS-RoeaveKby5OXxsAkns4=/620x455/e.glbimg.com/og/ed/f/original/2021/04/15/receita-pizza-doce-chocolate-morango.jpg', 2, 1),
 		('Banana com Canela', 'Banana, Canela e Leite Condensado', 40.00, 'https://lupertine.com.br/wp-content/uploads/2022/07/BANANA-1.jpg', 2, 1),
         -- Pizzas Vegetarianas
-		('Vegetariana', 'Molho de Tomate, Mussarela e Legumes Frescos', 38.00, 'https://www.maestrella.com/wp-content/uploads/2021/09/AUTUMN-VEGGIE-PIZZA-min.jpg', 3, 1),
+		('Vegetariana', 'Molho de Tomate, Mussarela, Cogumelos e Legumes Frescos', 38.00, 'https://www.maestrella.com/wp-content/uploads/2021/09/AUTUMN-VEGGIE-PIZZA-min.jpg', 3, 1),
 		('Rúcula com Tomate', 'Mussarela de Búfala, Rúcula e Tomate Seco', 45.00, 'https://images.unsplash.com/photo-1641840360785-c720744aa905?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 3, 1),
         -- Águas
         ('Água Mineral', 'Água mineral natural sem gás', 1.50, 'https://www.eatright.org/-/media/images/eatright-articles/eatright-article-1200x675/what-makes-a-healthful-drink-of-water_1200x675.jpg?as=0&w=967&rev=2c24c6a7b16e471081d6de8b21657fb7&hash=80C212345F4602E3682D1CA6BF467544', 4, 2),
@@ -190,12 +202,12 @@ CREATE TABLE tamanhos (
         ('Suco de Uva', 'Suco natural de uva orgânico', 8.50, 'https://thekitchenmccabe.com/wp-content/uploads/2018/10/Grape-Juice-8-1-of-1.jpg', 4, 2),
         ('Limonada', 'Limonada italiana tradicional com hortelã', 8.00, 'https://www.comidaereceitas.com.br/wp-content/uploads/2007/09/limonada-de-menta.jpg', 4, 2),
         ('Pink Limonade', 'Limonada rosa com toque de framboesa', 10.00, 'https://guiadacozinha.com.br/wp-content/uploads/2019/11/pink-lemonade-receita.jpg', 4, 2),
+		('Chá Gelado', 'Chá gelado com limão e hortelã', 6.50, 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=500', 4, 2),
         -- Bebidas Especiais
-        ('Chá Gelado', 'Chá gelado com limão e hortelã', 6.50, 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=500', 4, 2),
-        ('Casa Valduga Origem Tinto', 'Vinho seco brasileiro. Chique. Combina demais com o nosso restaurante', 110.90, 'https://18666.cdn.simplo7.net/static/18666/sku/tintos-seco-vinho-casa-valduga-origem-cabernet-sauvignon-tinto-750ml--p-1557779248419.jpg', 4, 4),
-        ('Primitivo Italia', 'Vinho tinto italiano. Um clássico.', 140.90, 'https://www.portoaporto.com.br/blog/wp-content/uploads/2024/08/primitivo-vinho-1400px.jpg', 4, 4),
-        ('Lídio Carraro Faces', 'Vinho tinto brasileiro.', 74.90, 'https://www.lidiocarraro.com/storage/images/product-lines/decoration/3/md-faces-do-brasil-2.jpg', 4, 4),
-        ('Naturelle Frisante Branco', 'Vinho branco brasileiro. Suave. Perfeito para dia', 86.90, 'https://http2.mlstatic.com/D_NQ_NP_802065-MLB47835603197_102021-O.webp', 4, 4),
+        ('Casa Valduga Origem Tinto', 'Vinho seco brasileiro. Chique. Combina demais com o nosso restaurante', 110.90, 'https://18666.cdn.simplo7.net/static/18666/sku/tintos-seco-vinho-casa-valduga-origem-cabernet-sauvignon-tinto-750ml--p-1557779248419.jpg', 5, 4),
+        ('Primitivo Italia', 'Vinho tinto italiano. Um clássico.', 140.90, 'https://www.portoaporto.com.br/blog/wp-content/uploads/2024/08/primitivo-vinho-1400px.jpg', 5, 4),
+        ('Lídio Carraro Faces', 'Vinho tinto brasileiro.', 74.90, 'https://www.lidiocarraro.com/storage/images/product-lines/decoration/3/md-faces-do-brasil-2.jpg', 5, 4),
+        ('Naturelle Frisante Branco', 'Vinho branco brasileiro. Suave. Perfeito para dia', 86.90, 'https://http2.mlstatic.com/D_NQ_NP_802065-MLB47835603197_102021-O.webp', 5, 4),
         -- Sobremesas
         ('Panna Cotta', 'Sobremesa italiana de creme de baunilha com calda de frutas vermelhas', 16.00, 'https://images.pexels.com/photos/15359109/pexels-photo-15359109.jpeg', 5, 3),
         ('Banoffee', 'Torta de banana, doce de leite e chantilly, criação inglesa com toque italiano', 18.50, 'https://www.foodandwine.com/thmb/yboQhtuPBJ9aw0TmrZwEOUHguqc=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/banofee-pie-FT-RECIPE0325-d3b7ade5ed654806904775dcfe0f99cb.jpg', 5, 3),
@@ -244,8 +256,10 @@ CREATE TABLE tamanhos (
 		('Hortelã', 2.80, 2, './assets/ingredientes/hortela.png'),
 		('Lascas de Limão', 3.00, 2, './assets/ingredientes/limao.png'),
         -- Bebidas
-        ('Canudo', 0.00, 3, './assets/ingredientes/placeholder.svg'),
-        ('Gelo e Limão', 0.00, 3,'./assets/ingredientes/placeholder.svg');
+        ('Canudo de Papel', 0.00, 3, './assets/ingredientes/placeholder.svg'),
+        ('Gelo e Limão', 0.00, 3,'./assets/ingredientes/placeholder.svg'),
+        -- Bebidas Especiais
+        ('Taça Cristal', 0.00, 4, './assets/ingredientes/placeholder.svg');
     INSERT INTO estados (nome) VALUES
 		('Em Processamento'),
         ('Preparando'),

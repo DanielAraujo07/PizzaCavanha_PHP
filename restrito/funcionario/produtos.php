@@ -26,13 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = mysqli_prepare($conn, $sql);
         mysqli_stmt_bind_param($stmt, "ssdsii", $nome, $descricao, $preco, $imagem, $id_categoria, $disponivel);
-        
+
         if (mysqli_stmt_execute($stmt)) {
             $novo_id = mysqli_insert_id($conn);
-            
+
             // REGISTRAR LOG DE ADICIONAR
             $dados_novos = [
-                'nome' => $nome, 
+                'nome' => $nome,
                 'descricao' => $descricao,
                 'preco' => $preco,
                 'imagem' => $imagem,
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'disponivel' => $disponivel
             ];
             registrarLog($conn, 'produtos', $novo_id, 'INSERT', null, formatarDadosParaLog($dados_novos));
-            
+
             $mensagem = "Produto adicionado com sucesso!";
             $tipo_mensagem = "success";
         } else {
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Atualizar produto
     if (isset($_POST['atualizar_produto'])) {
         $id = intval($_POST['id']);
-        
+
         // Buscar dados antigos antes da atualização
         $sql_antigo = "SELECT nome, descricao, preco, imagem, id_categoria, disponivel FROM produtos WHERE id = ?";
         $stmt_antigo = mysqli_prepare($conn, $sql_antigo);
@@ -71,11 +71,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql = "UPDATE produtos SET nome=?, descricao=?, preco=?, imagem=?, id_categoria=?, disponivel=? WHERE id=?";
         $stmt = mysqli_prepare($conn, $sql);
         mysqli_stmt_bind_param($stmt, "ssdsiii", $nome, $descricao, $preco, $imagem, $id_categoria, $disponivel, $id);
-        
+
         if (mysqli_stmt_execute($stmt)) {
             // REGISTRAR LOG DE ATUALIZAÇÃO
             $dados_novos = [
-                'nome' => $nome, 
+                'nome' => $nome,
                 'descricao' => $descricao,
                 'preco' => $preco,
                 'imagem' => $imagem,
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'disponivel' => $disponivel
             ];
             registrarLog($conn, 'produtos', $id, 'UPDATE', formatarDadosParaLog($dados_antigos), formatarDadosParaLog($dados_novos));
-            
+
             $mensagem = "Produto atualizado com sucesso!";
             $tipo_mensagem = "success";
         } else {
@@ -95,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Excluir produto
     if (isset($_POST['excluir_produto'])) {
         $id = intval($_POST['id']);
-        
+
         // Buscar dados antigos para o log
         $sql_antigo = "SELECT nome, descricao, preco, imagem, id_categoria, disponivel FROM produtos WHERE id = ?";
         $stmt_antigo = mysqli_prepare($conn, $sql_antigo);
@@ -103,15 +103,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_execute($stmt_antigo);
         $result_antigo = mysqli_stmt_get_result($stmt_antigo);
         $dados_antigos = mysqli_fetch_assoc($result_antigo);
-        
+
         $sql = "DELETE FROM produtos WHERE id = ?";
         $stmt = mysqli_prepare($conn, $sql);
         mysqli_stmt_bind_param($stmt, "i", $id);
-        
+
         if (mysqli_stmt_execute($stmt)) {
             // REGISTRAR LOG DE EXCLUSÃO
             registrarLog($conn, 'produtos', $id, 'DELETE', formatarDadosParaLog($dados_antigos), null);
-            
+
             $mensagem = "Produto excluído com sucesso!";
             $tipo_mensagem = "success";
         } else {
@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Buscar produtos (com filtro de busca)
-$busca = isset($_GET['busca']) ? mysqli_real_escape_string($conn, $_GET['busca']) : '';
+$busca = isset($_GET['busca']) ? $_GET['busca'] : '';
 $filtro_categoria = isset($_GET['categoria']) ? intval($_GET['categoria']) : '';
 
 $sql_produtos = "SELECT p.*, c.nome as categoria_nome 
@@ -130,16 +130,31 @@ $sql_produtos = "SELECT p.*, c.nome as categoria_nome
                  LEFT JOIN categorias c ON p.id_categoria = c.id 
                  WHERE 1=1";
 
+$params = [];
+$types = '';
+
 if (!empty($busca)) {
-    $sql_produtos .= " AND (p.nome LIKE '%$busca%' OR p.descricao LIKE '%$busca%')";
+    $sql_produtos .= " AND (p.nome LIKE ? OR p.descricao LIKE ?)";
+    $search_term = "%" . mysqli_real_escape_string($conn, $busca) . "%";
+    $params[] = $search_term;
+    $params[] = $search_term;
+    $types .= 'ss';
 }
 
 if (!empty($filtro_categoria)) {
-    $sql_produtos .= " AND p.id_categoria = $filtro_categoria";
+    $sql_produtos .= " AND p.id_categoria = ?";
+    $params[] = $filtro_categoria;
+    $types .= 'i';
 }
 
 $sql_produtos .= " ORDER BY p.nome";
-$result_produtos = mysqli_query($conn, $sql_produtos);
+
+$stmt = mysqli_prepare($conn, $sql_produtos);
+if (!empty($params)) {
+    mysqli_stmt_bind_param($stmt, $types, ...$params);
+}
+mysqli_stmt_execute($stmt);
+$result_produtos = mysqli_stmt_get_result($stmt);
 $produtos = mysqli_fetch_all($result_produtos, MYSQLI_ASSOC);
 
 // Buscar categorias
@@ -155,19 +170,20 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
 
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Produtos</title>
     <link rel="shortcut icon" href="../assets/funcionario.png" />
-    
+
     <!-- Fontes Oswald, Jaro e Rajdhani -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Jaro:opsz@6..72&family=Oswald:wght@200..700&display=swap" rel="stylesheet">
-    
+
     <!-- Icones Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://kit.fontawesome.com/18b2c31938.js" crossorigin="anonymous"></script>
@@ -237,24 +253,24 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
                 <form method="GET" class="filters-form">
                     <div class="form-group">
                         <label for="busca">Buscar Produtos</label>
-                        <input type="text" class="form-control" id="busca" name="busca" 
-                               value="<?php echo htmlspecialchars($busca); ?>" 
-                               placeholder="Digite o nome ou descrição do produto...">
+                        <input type="text" class="form-control" id="busca" name="busca"
+                            value="<?php echo htmlspecialchars($busca); ?>"
+                            placeholder="Digite o nome ou descrição do produto...">
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="categoria">Filtrar por Categoria</label>
                         <select class="form-control" id="categoria" name="categoria">
                             <option value="">Todas as categorias</option>
                             <?php foreach ($categorias as $categoria): ?>
-                                <option value="<?php echo $categoria['id']; ?>" 
+                                <option value="<?php echo $categoria['id']; ?>"
                                     <?php echo $filtro_categoria == $categoria['id'] ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($categoria['nome']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-search"></i> Buscar
@@ -277,14 +293,14 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
                 <!-- Formulário de Adicionar/Editar Produto -->
                 <section class="section-card">
                     <div class="section-header">
-                        <h2><i class="fas fa-plus-circle"></i> 
+                        <h2><i class="fas fa-plus-circle"></i>
                             <span id="formTitle">Adicionar Novo Produto</span>
                         </h2>
                     </div>
                     <div class="section-content">
                         <form method="POST" id="produtoForm">
                             <input type="hidden" name="id" id="produto_id">
-                            
+
                             <div class="form-group">
                                 <label for="nome">Nome do Produto</label>
                                 <input type="text" class="form-control" id="nome" name="nome" required>
@@ -359,14 +375,14 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
                                         <tr>
                                             <td>
                                                 <?php if ($produto['imagem']): ?>
-                                                    <img src="<?php echo htmlspecialchars($produto['imagem']); ?>" 
-                                                         alt="<?php echo htmlspecialchars($produto['nome']); ?>" 
-                                                         class="product-image"
-                                                         onerror="this.src='../assets/placeholder-pizza.jpg'">
+                                                    <img src="<?php echo htmlspecialchars($produto['imagem']); ?>"
+                                                        alt="<?php echo htmlspecialchars($produto['nome']); ?>"
+                                                        class="product-image"
+                                                        onerror="this.src='../assets/placeholder-pizza.jpg'">
                                                 <?php else: ?>
-                                                    <img src="../assets/placeholder-pizza.jpg" 
-                                                         alt="Sem imagem" 
-                                                         class="product-image">
+                                                    <img src="../assets/placeholder-pizza.jpg"
+                                                        alt="Sem imagem"
+                                                        class="product-image">
                                                 <?php endif; ?>
                                             </td>
                                             <td><?php echo htmlspecialchars($produto['nome']); ?></td>
@@ -379,19 +395,19 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
                                             </td>
                                             <td>
                                                 <div class="actions">
-                                                    <button class="btn btn-warning btn-sm" 
-                                                            onclick="editarProduto(<?php echo $produto['id']; ?>)"
-                                                            title="Editar">
+                                                    <button class="btn btn-warning btn-sm"
+                                                        onclick="editarProduto(<?php echo $produto['id']; ?>)"
+                                                        title="Editar">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
-                                                    <button class="btn btn-primary btn-sm" 
-                                                            onclick="visualizarProduto(<?php echo $produto['id']; ?>)"
-                                                            title="Visualizar">
+                                                    <button class="btn btn-primary btn-sm"
+                                                        onclick="visualizarProduto(<?php echo $produto['id']; ?>)"
+                                                        title="Visualizar">
                                                         <i class="fas fa-eye"></i>
                                                     </button>
-                                                    <button class="btn btn-danger btn-sm" 
-                                                            onclick="confirmarExclusao(<?php echo $produto['id']; ?>, '<?php echo htmlspecialchars($produto['nome']); ?>')"
-                                                            title="Excluir">
+                                                    <button class="btn btn-danger btn-sm"
+                                                        onclick="confirmarExclusao(<?php echo $produto['id']; ?>, '<?php echo htmlspecialchars($produto['nome']); ?>')"
+                                                        title="Excluir">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </div>
@@ -519,15 +535,17 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
                 document.getElementById('imagem').value = produto.imagem || '';
                 document.getElementById('id_categoria').value = produto.id_categoria;
                 document.getElementById('disponivel').checked = produto.disponivel == 1;
-                
+
                 // Mudar formulário para modo edição
                 document.getElementById('formTitle').textContent = 'Editar Produto';
                 document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Atualizar Produto';
                 document.getElementById('submitBtn').name = 'atualizar_produto';
                 document.getElementById('cancelEdit').style.display = 'inline-block';
-                
+
                 // Rolagem suave para o formulário
-                document.getElementById('produtoForm').scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('produtoForm').scrollIntoView({
+                    behavior: 'smooth'
+                });
             }
         }
 
@@ -544,7 +562,7 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
         // Função para confirmar exclusão
         function confirmarExclusao(id, nome) {
             document.getElementById('delete_id').value = id;
-            document.getElementById('deleteMessage').textContent = 
+            document.getElementById('deleteMessage').textContent =
                 `Tem certeza que deseja excluir o produto "${nome}"? Esta ação não pode ser desfeita.`;
             deleteModal.style.display = 'block';
         }
@@ -553,7 +571,7 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
         document.addEventListener('DOMContentLoaded', function() {
             const currentPage = window.location.pathname.split('/').pop();
             const menuLinks = document.querySelectorAll('.admin-menu a');
-            
+
             menuLinks.forEach(link => {
                 if (link.getAttribute('href') === currentPage) {
                     link.classList.add('active');
@@ -562,4 +580,5 @@ $ativos = mysqli_fetch_assoc($result_ativos)['total'];
         });
     </script>
 </body>
+
 </html>

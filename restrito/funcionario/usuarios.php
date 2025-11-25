@@ -38,6 +38,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mysqli_stmt_bind_param($stmt, "ssssi", $nome, $email, $telefone, $senha, $class_id);
 
             if (mysqli_stmt_execute($stmt)) {
+                $novo_id = mysqli_insert_id($conn);
+                
+                // REGISTRAR LOG DE ADICIONAR USUÁRIO
+                $dados_novos = [
+                    'nome' => $nome,
+                    'email' => $email,
+                    'telefone' => $telefone,
+                    'class_id' => $class_id
+                ];
+                registrarLog($conn, 'users', $novo_id, 'INSERT', null, formatarDadosParaLog($dados_novos));
+
                 $mensagem = "Usuário adicionado com sucesso!";
                 $tipo_mensagem = "success";
             } else {
@@ -50,6 +61,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Atualizar usuário
     if (isset($_POST['atualizar_usuario'])) {
         $id = intval($_POST['id']);
+        
+        // Buscar dados antigos antes da atualização
+        $sql_antigo = "SELECT nome, email, telefone, class_id FROM users WHERE id = ?";
+        $stmt_antigo = mysqli_prepare($conn, $sql_antigo);
+        mysqli_stmt_bind_param($stmt_antigo, "i", $id);
+        mysqli_stmt_execute($stmt_antigo);
+        $result_antigo = mysqli_stmt_get_result($stmt_antigo);
+        $dados_antigos = mysqli_fetch_assoc($result_antigo);
+
         $nome = mysqli_real_escape_string($conn, $_POST['nome']);
         $email = mysqli_real_escape_string($conn, $_POST['email']);
         $telefone = mysqli_real_escape_string($conn, $_POST['telefone']);
@@ -68,6 +88,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (mysqli_stmt_execute($stmt)) {
+            // REGISTRAR LOG DE ATUALIZAÇÃO DE USUÁRIO
+            $dados_novos = [
+                'nome' => $nome,
+                'email' => $email,
+                'telefone' => $telefone,
+                'class_id' => $class_id
+            ];
+            registrarLog($conn, 'users', $id, 'UPDATE', 
+                        formatarDadosParaLog($dados_antigos), 
+                        formatarDadosParaLog($dados_novos));
+
             $mensagem = "Usuário atualizado com sucesso!";
             $tipo_mensagem = "success";
         } else {
@@ -85,11 +116,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mensagem = "Você não pode excluir sua própria conta!";
             $tipo_mensagem = "error";
         } else {
+            // Buscar dados antigos para o log
+            $sql_antigo = "SELECT nome, email, telefone, class_id FROM users WHERE id = ?";
+            $stmt_antigo = mysqli_prepare($conn, $sql_antigo);
+            mysqli_stmt_bind_param($stmt_antigo, "i", $id);
+            mysqli_stmt_execute($stmt_antigo);
+            $result_antigo = mysqli_stmt_get_result($stmt_antigo);
+            $dados_antigos = mysqli_fetch_assoc($result_antigo);
+
             $sql = "DELETE FROM users WHERE id = ?";
             $stmt = mysqli_prepare($conn, $sql);
             mysqli_stmt_bind_param($stmt, "i", $id);
 
             if (mysqli_stmt_execute($stmt)) {
+                // REGISTRAR LOG DE EXCLUSÃO DE USUÁRIO
+                registrarLog($conn, 'users', $id, 'DELETE', formatarDadosParaLog($dados_antigos), null);
+
                 $mensagem = "Usuário excluído com sucesso!";
                 $tipo_mensagem = "success";
             } else {
@@ -110,6 +152,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_bind_param($stmt, "si", $nome, $nivel);
 
         if (mysqli_stmt_execute($stmt)) {
+            $novo_id = mysqli_insert_id($conn);
+            
+            // REGISTRAR LOG DE ADICIONAR CLASSE
+            $dados_novos = ['nome' => $nome, 'nivel' => $nivel];
+            registrarLog($conn, 'user_classes', $novo_id, 'INSERT', null, formatarDadosParaLog($dados_novos));
+            
             $mensagem = "Classe de usuário adicionada com sucesso!";
             $tipo_mensagem = "success";
         } else {
@@ -121,6 +169,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Atualizar classe
     if (isset($_POST['atualizar_classe'])) {
         $id = intval($_POST['id']);
+        
+        // Buscar dados antigos antes da atualização
+        $sql_antigo = "SELECT nome, nivel FROM user_classes WHERE id = ?";
+        $stmt_antigo = mysqli_prepare($conn, $sql_antigo);
+        mysqli_stmt_bind_param($stmt_antigo, "i", $id);
+        mysqli_stmt_execute($stmt_antigo);
+        $result_antigo = mysqli_stmt_get_result($stmt_antigo);
+        $dados_antigos = mysqli_fetch_assoc($result_antigo);
+
         $nome = mysqli_real_escape_string($conn, $_POST['nome']);
         $nivel = intval($_POST['nivel']);
 
@@ -129,6 +186,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_bind_param($stmt, "sii", $nome, $nivel, $id);
 
         if (mysqli_stmt_execute($stmt)) {
+            // REGISTRAR LOG DE ATUALIZAÇÃO DE CLASSE
+            $dados_novos = ['nome' => $nome, 'nivel' => $nivel];
+            registrarLog($conn, 'user_classes', $id, 'UPDATE', 
+                        formatarDadosParaLog($dados_antigos), 
+                        formatarDadosParaLog($dados_novos));
+            
             $mensagem = "Classe de usuário atualizada com sucesso!";
             $tipo_mensagem = "success";
         } else {
@@ -141,6 +204,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['excluir_classe'])) {
         $id = intval($_POST['id']);
 
+        // Buscar dados antigos para o log
+        $sql_antigo = "SELECT nome, nivel FROM user_classes WHERE id = ?";
+        $stmt_antigo = mysqli_prepare($conn, $sql_antigo);
+        mysqli_stmt_bind_param($stmt_antigo, "i", $id);
+        mysqli_stmt_execute($stmt_antigo);
+        $result_antigo = mysqli_stmt_get_result($stmt_antigo);
+        $dados_antigos = mysqli_fetch_assoc($result_antigo);
+
         // Verificar se há usuários usando esta classe
         $check_sql = "SELECT COUNT(*) as total FROM users WHERE class_id = ?";
         $check_stmt = mysqli_prepare($conn, $check_sql);
@@ -150,7 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $count = mysqli_fetch_assoc($result)['total'];
 
         if ($count > 0) {
-            $mensagem = "Não é possível excluir esta classe pois existem usuários vinculados a ela!";
+            $mensagem = "Não é possível excluir esta classe pois existem $count usuário(s) vinculado(s) a ela!";
             $tipo_mensagem = "error";
         } else {
             $sql = "DELETE FROM user_classes WHERE id = ?";
@@ -158,6 +229,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mysqli_stmt_bind_param($stmt, "i", $id);
 
             if (mysqli_stmt_execute($stmt)) {
+                // REGISTRAR LOG DE EXCLUSÃO DE CLASSE
+                registrarLog($conn, 'user_classes', $id, 'DELETE', formatarDadosParaLog($dados_antigos), null);
+                
                 $mensagem = "Classe de usuário excluída com sucesso!";
                 $tipo_mensagem = "success";
             } else {

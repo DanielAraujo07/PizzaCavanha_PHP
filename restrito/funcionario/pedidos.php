@@ -16,12 +16,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['atualizar_status'])) 
     $pedido_id = intval($_POST['pedido_id']);
     $novo_status = intval($_POST['novo_status']);
 
+    // Buscar dados atuais antes da atualização
+    $sql_antigo = "SELECT p.*, e.nome as estado_nome 
+                   FROM pedido p 
+                   LEFT JOIN estados e ON p.id_estado = e.id 
+                   WHERE p.id = ?";
+    $stmt_antigo = mysqli_prepare($conn, $sql_antigo);
+    mysqli_stmt_bind_param($stmt_antigo, "i", $pedido_id);
+    mysqli_stmt_execute($stmt_antigo);
+    $result_antigo = mysqli_stmt_get_result($stmt_antigo);
+    $dados_antigos = mysqli_fetch_assoc($result_antigo);
+
     $sql = "UPDATE pedido SET id_estado = ? WHERE id = ?";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, "ii", $novo_status, $pedido_id);
 
     if (mysqli_stmt_execute($stmt)) {
-        $mensagem = "Status do pedido atualizado com sucesso!";
+        // Buscar nome do novo estado para o log
+        $sql_novo_estado = "SELECT nome FROM estados WHERE id = ?";
+        $stmt_novo = mysqli_prepare($conn, $sql_novo_estado);
+        mysqli_stmt_bind_param($stmt_novo, "i", $novo_status);
+        mysqli_stmt_execute($stmt_novo);
+        $result_novo = mysqli_stmt_get_result($stmt_novo);
+        $estado_novo = mysqli_fetch_assoc($result_novo);
+
+        // REGISTRAR LOG DE ATUALIZAÇÃO
+        $dados_anteriores_log = [
+            'id_estado' => $dados_antigos['id_estado'],
+            'estado_nome' => $dados_antigos['estado_nome'],
+            'valor' => $dados_antigos['valor'],
+            'id_cliente' => $dados_antigos['id_cliente']
+        ];
+        
+        $dados_novos_log = [
+            'id_estado' => $novo_status,
+            'estado_nome' => $estado_novo['nome'],
+            'valor' => $dados_antigos['valor'], // Mantém o mesmo
+            'id_cliente' => $dados_antigos['id_cliente'] // Mantém o mesmo
+        ];
+        
+        registrarLog($conn, 'pedido', $pedido_id, 'UPDATE', 
+                    formatarDadosParaLog($dados_anteriores_log), 
+                    formatarDadosParaLog($dados_novos_log));
+
+        $mensagem = "Status do pedido #{$pedido_id} atualizado com sucesso!";
         $tipo_mensagem = "success";
     } else {
         $mensagem = "Erro ao atualizar status: " . mysqli_error($conn);

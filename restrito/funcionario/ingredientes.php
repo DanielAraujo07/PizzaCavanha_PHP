@@ -118,9 +118,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Buscar ingredientes (com filtro de busca)
-$busca = isset($_GET['busca']) ? mysqli_real_escape_string($conn, $_GET['busca']) : '';
+$busca = isset($_GET['busca']) ? $_GET['busca'] : '';
 $filtro_tipo = isset($_GET['tipo']) ? intval($_GET['tipo']) : '';
 
+// Construir a query base
 $sql_ingredientes = "SELECT i.*, t.nome as tipo_nome 
                      FROM ingredientes i 
                      LEFT JOIN tipos_categoria t ON i.tipo_id = t.id 
@@ -129,25 +130,31 @@ $sql_ingredientes = "SELECT i.*, t.nome as tipo_nome
 $params = [];
 $types = '';
 
+// Adicionar filtro de busca se existir
 if (!empty($busca)) {
     $sql_ingredientes .= " AND i.nome LIKE ?";
-    $params[] = "%$busca%";
+    $params[] = "%" . mysqli_real_escape_string($conn, $busca) . "%";
     $types .= 's';
 }
 
+// Adicionar filtro de tipo se existir
 if (!empty($filtro_tipo)) {
     $sql_ingredientes .= " AND i.tipo_id = ?";
     $params[] = $filtro_tipo;
     $types .= 'i';
 }
 
+$sql_ingredientes .= " ORDER BY i.nome";
+
+// Preparar e executar a query
 $stmt = mysqli_prepare($conn, $sql_ingredientes);
+
 if (!empty($params)) {
     mysqli_stmt_bind_param($stmt, $types, ...$params);
 }
 
-$sql_ingredientes .= " ORDER BY i.nome";
-$result_ingredientes = mysqli_query($conn, $sql_ingredientes);
+mysqli_stmt_execute($stmt);
+$result_ingredientes = mysqli_stmt_get_result($stmt);
 $ingredientes = mysqli_fetch_all($result_ingredientes, MYSQLI_ASSOC);
 
 // Buscar tipos de categoria

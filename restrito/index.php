@@ -2848,22 +2848,16 @@ include "verifica_login.php";
                                 <input type="text" name="cidade" placeholder="Cidade" required>
                             </div>
                             <div class="form-group">
-                                <input type="text" name="distrito" placeholder="Distrito" required>
+                                <input type="text" name="bairro" placeholder="Bairro das Flores" required>
                             </div>
                             <div class="form-group">
-                                <input type="text" name="bairro" placeholder="Bairro" required>
+                                <input type="text" name="rua" placeholder="Rua dos Tamandarés" required>
                             </div>
                             <div class="form-group">
-                                <input type="text" name="rua" placeholder="Rua" required>
-                            </div>
-                            <div class="form-group">
-                                <input type="text" name="numero" placeholder="Número" required>
+                                <input type="text" name="numero" placeholder="nº 419" required>
                             </div>
                             <div class="form-group">
                                 <input type="text" name="complemento" placeholder="Complemento (opcional)">
-                            </div>
-                            <div class="form-group">
-                                <textarea name="observacao" placeholder="Observações para a entrega (opcional)" rows="3"></textarea>
                             </div>
                         </form>
                     </div>
@@ -4119,7 +4113,7 @@ include "verifica_login.php";
             // 🍷 VINHOS (tipo_id 4) - SEM ADICIONAIS, APENAS TAMANHOS
             if (item.tipo_id === 4) {
                 console.log('🍷 Vinho - mostrando apenas tamanhos de vinhos');
-                mostrarPopupAdicionais(item, 1, 4); // tipoIngredientes 1 (sem adicionais), tipoTamanhos 4 (vinhos)
+                mostrarPopupAdicionais(item, 4, 4); // tipoIngredientes 4 (com adicionais de bebidas especiais), tipoTamanhos 4 (vinhos)
                 return;
             }
 
