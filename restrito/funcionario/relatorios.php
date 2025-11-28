@@ -2,8 +2,8 @@
 include "../verifica_login.php";
 include "../conexao.php";
 
-// Verificar permissão (nível 2+ para acessar relatórios)
-if ($_SESSION['class_nivel'] < 2) {
+// Verificar permissão (nível Financeiro para acessar relatórios)
+if ($_SESSION['class_nivel'] < 5) {
     header('Location: ../index.php');
     exit();
 }
@@ -183,6 +183,12 @@ $vendas_por_dia = mysqli_fetch_all($result_vendas_dia, MYSQLI_ASSOC);
                     &bull;
                     <div class="admin-user-role"><?php echo htmlspecialchars($_SESSION['class_nome']); ?></div>
                 </div>
+
+                <!-- Botão de Toggle Tema -->
+                <button class="theme-toggle" id="themeToggle" title="Alternar tema">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+
                 <a href="../../logout.php" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i> Sair
                 </a>
@@ -194,13 +200,35 @@ $vendas_por_dia = mysqli_fetch_all($result_vendas_dia, MYSQLI_ASSOC);
         <aside class="admin-sidebar">
             <ul class="admin-menu">
                 <li><a href="index.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <li><a href="produtos.php"><i class="fas fa-pizza-slice"></i> Produtos</a></li>
-                <li><a href="ingredientes.php"><i class="fas fa-carrot"></i> Ingredientes</a></li>
-                <li><a href="pedidos.php"><i class="fas fa-shopping-cart"></i> Pedidos</a></li>
-                <li><a href="categorias.php"><i class="fas fa-tag"></i> Categorias</a></li>
-                <li><a href="usuarios.php"><i class="fas fa-users"></i> Usuários</a></li>
-                <li><a href="#" class="active"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
-                <li><a href="logs_auditoria.php"><i class="fas fa-clipboard-list"></i> Logs de Auditoria</a></li>
+
+                <?php if ($_SESSION['class_nivel'] >= 4): ?>
+                    <li><a href="produtos.php"><i class="fas fa-pizza-slice"></i> Produtos</a></li>
+                <?php endif; ?>
+
+                <?php if ($_SESSION['class_nivel'] >= 4): ?>
+                    <li><a href="ingredientes.php"><i class="fas fa-carrot"></i> Ingredientes</a></li>
+                <?php endif; ?>
+
+                <?php if ($_SESSION['class_nivel'] >= 2): ?>
+                    <li><a href="pedidos.php"><i class="fas fa-shopping-cart"></i> Pedidos</a></li>
+                <?php endif; ?>
+
+                <?php if ($_SESSION['class_nivel'] >= 5): ?>
+                    <li><a href="categorias.php"><i class="fas fa-tag"></i> Categorias</a></li>
+                <?php endif; ?>
+
+                <?php if ($_SESSION['class_nivel'] >= 6): ?>
+                    <li><a href="usuarios.php"><i class="fas fa-users"></i> Usuários</a></li>
+                <?php endif; ?>
+
+                <?php if ($_SESSION['class_nivel'] >= 5): ?>
+                    <li><a href="relatorios.php"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+                <?php endif; ?>
+
+                <?php if ($_SESSION['class_nivel'] >= 6): ?>
+                    <li><a href="logs_auditoria.php"><i class="fas fa-clipboard-list"></i> Logs de Auditoria</a></li>
+                <?php endif; ?>
+
                 <li><a href="../index.php"><i class="fas fa-home"></i> Voltar à Home</a></li>
             </ul>
         </aside>
@@ -532,7 +560,7 @@ $vendas_por_dia = mysqli_fetch_all($result_vendas_dia, MYSQLI_ASSOC);
                             color: 'rgba(255, 255, 255, 0.1)'
                         },
                         ticks: {
-                            color: '#E0E0E0'
+                            color: 'var(--light-color)'
                         }
                     },
                     y: {
@@ -543,7 +571,7 @@ $vendas_por_dia = mysqli_fetch_all($result_vendas_dia, MYSQLI_ASSOC);
                             color: 'rgba(255, 255, 255, 0.1)'
                         },
                         ticks: {
-                            color: '#E0E0E0',
+                            color: 'var(--light-color)',
                             callback: function(value) {
                                 return 'R$ ' + value.toLocaleString('pt-BR', {
                                     minimumFractionDigits: 2
@@ -559,14 +587,14 @@ $vendas_por_dia = mysqli_fetch_all($result_vendas_dia, MYSQLI_ASSOC);
                             drawOnChartArea: false,
                         },
                         ticks: {
-                            color: '#E0E0E0'
+                            color: 'var(--light-color)'
                         }
                     }
                 },
                 plugins: {
                     legend: {
                         labels: {
-                            color: '#E0E0E0'
+                            color: 'var(--light-color)'
                         }
                     },
                     tooltip: {
@@ -651,4 +679,57 @@ $vendas_por_dia = mysqli_fetch_all($result_vendas_dia, MYSQLI_ASSOC);
                 }
             });
         });
+        // Sistema de Tema Claro/Escuro
+document.addEventListener('DOMContentLoaded', function() {
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const body = document.body;
+
+    // Verificar tema salvo ou preferência do sistema
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Aplicar tema inicial
+    if (savedTheme === 'light' || (!savedTheme && !systemPrefersDark)) {
+        enableLightMode();
+    } else {
+        enableDarkMode();
+    }
+
+    // Event listener para o botão de toggle
+    themeToggle.addEventListener('click', function() {
+        if (body.getAttribute('data-theme') === 'light') {
+            enableDarkMode();
+        } else {
+            enableLightMode();
+        }
+    });
+
+    function enableLightMode() {
+        body.setAttribute('data-theme', 'light');
+        themeIcon.className = 'fas fa-sun';
+        themeToggle.title = 'Alternar para modo escuro';
+        localStorage.setItem('theme', 'light');
+    }
+
+    function enableDarkMode() {
+        body.removeAttribute('data-theme');
+        themeIcon.className = 'fas fa-moon';
+        themeToggle.title = 'Alternar para modo claro';
+        localStorage.setItem('theme', 'dark');
+    }
+
+    // Observar mudanças na preferência do sistema
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (!localStorage.getItem('theme')) {
+            if (e.matches) {
+                enableDarkMode();
+            } else {
+                enableLightMode();
+            }
+        }
+    });
+});
     </script>
+    </body>
+    </html>

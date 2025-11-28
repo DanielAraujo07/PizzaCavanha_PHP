@@ -2,8 +2,8 @@
 include "../verifica_login.php";
 include "../conexao.php";
 
-// Verificar permissão
-if ($_SESSION['class_nivel'] < 2) {
+// Verificar permissão (nível Financeiro para exportar relatórios)
+if ($_SESSION['class_nivel'] < 5) {
     header('Location: ../index.php');
     exit();
 }

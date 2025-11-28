@@ -2,8 +2,8 @@
 include "../verifica_login.php";
 include "../conexao.php";
 
-// Verificar permissão (nível 5+ para gerenciar usuários e classes)
-if ($_SESSION['class_nivel'] < 5) {
+// Verificar permissão (nível Admin para gerenciar usuários e classes)
+if ($_SESSION['class_nivel'] < 6) {
     header('Location: ../index.php');
     exit();
 }
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (mysqli_stmt_execute($stmt)) {
                 $novo_id = mysqli_insert_id($conn);
-                
+
                 // REGISTRAR LOG DE ADICIONAR USUÁRIO
                 $dados_novos = [
                     'nome' => $nome,
@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Atualizar usuário
     if (isset($_POST['atualizar_usuario'])) {
         $id = intval($_POST['id']);
-        
+
         // Buscar dados antigos antes da atualização
         $sql_antigo = "SELECT nome, email, telefone, class_id FROM users WHERE id = ?";
         $stmt_antigo = mysqli_prepare($conn, $sql_antigo);
@@ -95,9 +95,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'telefone' => $telefone,
                 'class_id' => $class_id
             ];
-            registrarLog($conn, 'users', $id, 'UPDATE', 
-                        formatarDadosParaLog($dados_antigos), 
-                        formatarDadosParaLog($dados_novos));
+            registrarLog(
+                $conn,
+                'users',
+                $id,
+                'UPDATE',
+                formatarDadosParaLog($dados_antigos),
+                formatarDadosParaLog($dados_novos)
+            );
 
             $mensagem = "Usuário atualizado com sucesso!";
             $tipo_mensagem = "success";
@@ -153,11 +158,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (mysqli_stmt_execute($stmt)) {
             $novo_id = mysqli_insert_id($conn);
-            
+
             // REGISTRAR LOG DE ADICIONAR CLASSE
             $dados_novos = ['nome' => $nome, 'nivel' => $nivel];
             registrarLog($conn, 'user_classes', $novo_id, 'INSERT', null, formatarDadosParaLog($dados_novos));
-            
+
             $mensagem = "Classe de usuário adicionada com sucesso!";
             $tipo_mensagem = "success";
         } else {
@@ -169,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Atualizar classe
     if (isset($_POST['atualizar_classe'])) {
         $id = intval($_POST['id']);
-        
+
         // Buscar dados antigos antes da atualização
         $sql_antigo = "SELECT nome, nivel FROM user_classes WHERE id = ?";
         $stmt_antigo = mysqli_prepare($conn, $sql_antigo);
@@ -188,10 +193,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (mysqli_stmt_execute($stmt)) {
             // REGISTRAR LOG DE ATUALIZAÇÃO DE CLASSE
             $dados_novos = ['nome' => $nome, 'nivel' => $nivel];
-            registrarLog($conn, 'user_classes', $id, 'UPDATE', 
-                        formatarDadosParaLog($dados_antigos), 
-                        formatarDadosParaLog($dados_novos));
-            
+            registrarLog(
+                $conn,
+                'user_classes',
+                $id,
+                'UPDATE',
+                formatarDadosParaLog($dados_antigos),
+                formatarDadosParaLog($dados_novos)
+            );
+
             $mensagem = "Classe de usuário atualizada com sucesso!";
             $tipo_mensagem = "success";
         } else {
@@ -231,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (mysqli_stmt_execute($stmt)) {
                 // REGISTRAR LOG DE EXCLUSÃO DE CLASSE
                 registrarLog($conn, 'user_classes', $id, 'DELETE', formatarDadosParaLog($dados_antigos), null);
-                
+
                 $mensagem = "Classe de usuário excluída com sucesso!";
                 $tipo_mensagem = "success";
             } else {
@@ -315,7 +325,7 @@ $total_funcionarios = $estatisticas['total_funcionarios'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Usuários</title>
-    <link rel="shortcut icon" href="../assets/funcionario.png"/>
+    <link rel="shortcut icon" href="../assets/funcionario.png" />
 
     <!-- Fontes Oswald, Jaro e Rajdhani -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -342,6 +352,12 @@ $total_funcionarios = $estatisticas['total_funcionarios'];
                     &bull;
                     <div class="admin-user-role"><?php echo htmlspecialchars($_SESSION['class_nome']); ?></div>
                 </div>
+
+                <!-- Botão de Toggle Tema -->
+                <button class="theme-toggle" id="themeToggle" title="Alternar tema">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+
                 <a href="../../logout.php" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i> Sair
                 </a>
@@ -353,13 +369,35 @@ $total_funcionarios = $estatisticas['total_funcionarios'];
         <aside class="admin-sidebar">
             <ul class="admin-menu">
                 <li><a href="index.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <li><a href="produtos.php"><i class="fas fa-pizza-slice"></i> Produtos</a></li>
-                <li><a href="ingredientes.php"><i class="fas fa-carrot"></i> Ingredientes</a></li>
-                <li><a href="pedidos.php"><i class="fas fa-shopping-cart"></i> Pedidos</a></li>
-                <li><a href="categorias.php"><i class="fas fa-tag"></i> Categorias</a></li>
-                <li><a href="#" class="active"><i class="fas fa-users"></i> Usuários</a></li>
-                <li><a href="relatorios.php"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
-                <li><a href="logs_auditoria.php"><i class="fas fa-clipboard-list"></i> Logs de Auditoria</a></li>
+
+                <?php if ($_SESSION['class_nivel'] >= 4): ?>
+                    <li><a href="produtos.php"><i class="fas fa-pizza-slice"></i> Produtos</a></li>
+                <?php endif; ?>
+
+                <?php if ($_SESSION['class_nivel'] >= 4): ?>
+                    <li><a href="ingredientes.php"><i class="fas fa-carrot"></i> Ingredientes</a></li>
+                <?php endif; ?>
+
+                <?php if ($_SESSION['class_nivel'] >= 2): ?>
+                    <li><a href="pedidos.php"><i class="fas fa-shopping-cart"></i> Pedidos</a></li>
+                <?php endif; ?>
+
+                <?php if ($_SESSION['class_nivel'] >= 5): ?>
+                    <li><a href="categorias.php"><i class="fas fa-tag"></i> Categorias</a></li>
+                <?php endif; ?>
+
+                <?php if ($_SESSION['class_nivel'] >= 6): ?>
+                    <li><a href="usuarios.php"><i class="fas fa-users"></i> Usuários</a></li>
+                <?php endif; ?>
+
+                <?php if ($_SESSION['class_nivel'] >= 5): ?>
+                    <li><a href="relatorios.php"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+                <?php endif; ?>
+
+                <?php if ($_SESSION['class_nivel'] >= 6): ?>
+                    <li><a href="logs_auditoria.php"><i class="fas fa-clipboard-list"></i> Logs de Auditoria</a></li>
+                <?php endif; ?>
+
                 <li><a href="../index.php"><i class="fas fa-home"></i> Voltar à Home</a></li>
             </ul>
         </aside>
@@ -1002,6 +1040,57 @@ $total_funcionarios = $estatisticas['total_funcionarios'];
             }
             e.target.value = value.slice(0, 15);
         });
+        // Sistema de Tema Claro/Escuro
+document.addEventListener('DOMContentLoaded', function() {
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const body = document.body;
+
+    // Verificar tema salvo ou preferência do sistema
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Aplicar tema inicial
+    if (savedTheme === 'light' || (!savedTheme && !systemPrefersDark)) {
+        enableLightMode();
+    } else {
+        enableDarkMode();
+    }
+
+    // Event listener para o botão de toggle
+    themeToggle.addEventListener('click', function() {
+        if (body.getAttribute('data-theme') === 'light') {
+            enableDarkMode();
+        } else {
+            enableLightMode();
+        }
+    });
+
+    function enableLightMode() {
+        body.setAttribute('data-theme', 'light');
+        themeIcon.className = 'fas fa-sun';
+        themeToggle.title = 'Alternar para modo escuro';
+        localStorage.setItem('theme', 'light');
+    }
+
+    function enableDarkMode() {
+        body.removeAttribute('data-theme');
+        themeIcon.className = 'fas fa-moon';
+        themeToggle.title = 'Alternar para modo claro';
+        localStorage.setItem('theme', 'dark');
+    }
+
+    // Observar mudanças na preferência do sistema
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (!localStorage.getItem('theme')) {
+            if (e.matches) {
+                enableDarkMode();
+            } else {
+                enableLightMode();
+            }
+        }
+    });
+});
     </script>
 </body>
 
